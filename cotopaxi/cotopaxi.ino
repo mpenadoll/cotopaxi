@@ -13,6 +13,8 @@ int buttonState = HIGH; // the current reading from the input pin
 //int profilePositions[4]; //{x0, x1, x2, x3} x0 is the start position, and x3 is the end position [pulses]
 //unsigned int profileTimes[4]; //{t0, t1, t2, t3} t0 is the start time, and t3 is the end time [ms]
 //bool integrateStart = true; // initializes the start of an integration profile
+float temp1; // temperature reading of the first thermistor
+float temp2; //temperature reading of the second thermistor
 
 void setup() {
   Serial.begin(9600);
@@ -66,19 +68,19 @@ void setup() {
   Serial.println("READY");
 }
 
-void motorDriver (float milliVolts) {
-  milliVolts = constrain(milliVolts, -24000, 24000);
-  if (milliVolts == 0){
-    digitalWrite(dirPin, HIGH);
+void voltageDriver(float milliVolts, int PWMpin) {
+  milliVolts = constrain(milliVolts, 0, millivoltRange);
+  if (milliVolts <= 0){
+//    digitalWrite(dirPin, HIGH);
     analogWrite(PWMpin, 0);
   }
-  else if (milliVolts < 0) {
-    digitalWrite(dirPin, HIGH);
-    analogWrite(PWMpin, map(abs(milliVolts),0,24000,15,255));
+//  else if (milliVolts < 0) {
+//    digitalWrite(dirPin, HIGH);
+//    analogWrite(PWMpin, map(abs(milliVolts),0,24000,15,255));
   }
   else {
-    digitalWrite(dirPin, LOW);
-    analogWrite(PWMpin, map(abs(milliVolts),0,24000,15,255));
+//    digitalWrite(dirPin, LOW);
+    analogWrite(PWMpin, map(abs(milliVolts),0,millivoltRange,0,255));
   }
 }
 
@@ -91,23 +93,23 @@ static inline int8_t sgn(float val) {
 void updateSensors(){
   // update button and limit switches
   int reading = digitalRead(buttonPin);  // read the state of the switch into a local variable
-  limitSwitch = digitalRead(limitSwitchPin);
+//  limitSwitch = digitalRead(limitSwitchPin);
 
   // get the time now
   unsigned int now = millis();
   static unsigned int lastTime = now - sampleTime;
 
-  // read encoder and calculate the speed
-  int newPosition = encoder.read();
-  static int lastPosition = newPosition;
-  // only calculate the speed if time elapsed has been more than set sample time
-  if (now - lastTime >= sampleTime){
-    currentSpeed = (newPosition - lastPosition)/(float)(now - lastTime);
-    // save static variables for next round
-    lastTime = now;
-    lastPosition = newPosition;
-  }
-  currentPosition = newPosition;
+//  // read encoder and calculate the speed
+//  int newPosition = encoder.read();
+//  static int lastPosition = newPosition;
+//  // only calculate the speed if time elapsed has been more than set sample time
+//  if (now - lastTime >= sampleTime){
+//    currentSpeed = (newPosition - lastPosition)/(float)(now - lastTime);
+//    // save static variables for next round
+//    lastTime = now;
+//    lastPosition = newPosition;
+//  }
+//  currentPosition = newPosition;
 
   static int lastButtonState = HIGH; // the previous reading from the input pin
   static unsigned int lastDebounceTime = 0;  // the last time the output pin was toggled
@@ -122,14 +124,23 @@ void updateSensors(){
       go = !go;       // change system state to go
       Serial.print("GO: ");
       Serial.println(go);
-      if (!go && homed) dir = -dir; // reverse directions if motion stopped with button, and homed
+//      if (!go && homed) dir = -dir; // reverse directions if motion stopped with button, and homed
     }
   }
   lastButtonState = reading; // save the reading. Next time through the loop, it'll be the lastButtonState
+
+  int analogRead1 = analogRead(thermistorPin1); //read the analog pin (raw 0 to 1023)
+  int analogRead2 = analogRead(thermistorPin2);
+  float V1 = analogRead1 * (Vref / 1024.0); // convert the analog reading to voltage
+  float V2 = analogRead2 * (Vref / 1024.0);
+  float R1 = V1*Rs / (Vref - V1); // convert the voltage to the thermistor resistance
+  float R2 = V2*Rs / (Vref - V2);
+  temp1 = B / log(R1/ry); // covert the resistance to a temperature reading
+  temp2 = B / log(R2/ry);
 }
 
 void setPosition(int newPosition){
-  motorDriver(0);
+  voltageDriver(0);
   encoder.write(newPosition);
   while (currentSpeed != 0){
     updateSensors();
@@ -159,7 +170,7 @@ void stopNow(){
       int deltaT = now - startTime; // calculate the time change from begginning of stop
       posSetpoint = startPosition + stopDir*(startSpeed*deltaT - accel*deltaT*deltaT/2); // [pulses]
       milliVolts = computePID(posSetpoint, currentPosition);
-      motorDriver(milliVolts);
+      voltageDriver(milliVolts);
       // save static variables for next round
       lastTime = now;
     }
@@ -169,13 +180,13 @@ void stopNow(){
   while (currentSpeed != 0) {
     if (now - lastTime >= sampleTime){
       milliVolts = computePID(endPosition, currentPosition);
-      motorDriver(milliVolts);
+      voltageDriver(milliVolts);
       lastTime = now;
     }
     updateSensors();
     now = millis();
   }
-  motorDriver(0);
+  voltageDriver(0);
   Serial.println("DONE STOPPING");
 }
 
@@ -195,7 +206,7 @@ void homeNow(){
     if (now - lastTime >= sampleTime){
       posSetpoint = integrateProfile(); // [pulses]
       milliVolts = computePID(posSetpoint, currentPosition);
-      motorDriver(milliVolts);
+      voltageDriver(milliVolts);
       // save static variables for next round
       lastTime = now;
     }
@@ -211,7 +222,7 @@ void homeNow(){
     if (now - lastTime >= sampleTime){
       posSetpoint += homeStep;
       milliVolts = computePID(posSetpoint, currentPosition);
-      motorDriver(milliVolts);
+      voltageDriver(milliVolts);
       lastTime = now;
     }
     updateSensors();
@@ -222,20 +233,20 @@ void homeNow(){
     if (now - lastTime >= sampleTime){
       posSetpoint += homeStep;
       milliVolts = computePID(posSetpoint, currentPosition);
-      motorDriver(milliVolts);
+      voltageDriver(milliVolts);
       lastTime = now;
     }
     updateSensors();
     now = millis();
   }
-  motorDriver(0);
+  voltageDriver(0);
   lastTime = now - sampleTime;
   integrateStart = true;
   while (!limitSwitch && go){
     if (now - lastTime >= sampleTime){
       posSetpoint -= homeStep;
       milliVolts = computePID(posSetpoint, currentPosition);
-      motorDriver(milliVolts);
+      voltageDriver(milliVolts);
       lastTime = now;
     }
     updateSensors();
@@ -246,13 +257,13 @@ void homeNow(){
     if (now - lastTime >= sampleTime){
       posSetpoint -= homeStep;
       milliVolts = computePID(posSetpoint, currentPosition);
-      motorDriver(milliVolts);
+      voltageDriver(milliVolts);
       lastTime = now;
     }
     updateSensors();
     now = millis();
   }
-  motorDriver(0);
+  voltageDriver(0);
   if (limitSwitch && go) {
     setPosition(0);
     homed = true;
@@ -304,7 +315,7 @@ void loop() {
     if (now - lastTime >= sampleTime){
       int posSetpoint = integrateProfile(); // [pulses]
       float milliVolts = computePID(posSetpoint, currentPosition);
-      motorDriver(milliVolts);
+      voltageDriver(milliVolts);
       // save static variables for next round
       lastTime = now;
     }
@@ -312,6 +323,6 @@ void loop() {
   else if (go && !homed) homeNow();
   else {
     if (currentSpeed != 0) stopNow();
-    motorDriver(0);
+    voltageDriver(0);
   }
 }

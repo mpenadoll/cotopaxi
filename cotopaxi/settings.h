@@ -17,9 +17,14 @@ float pulseKp, pulseKi, pulseKd; // pulse conversion declarations
 // CONSTANTS
 const unsigned int sampleTime = 30; //sample time for derivative measurements [ms]
 const unsigned int debounceDelay = 50;  // the debounce time; increase if the output flickers
-const int error = 5; // error [pulses] allowable for position control
-const unsigned int limitTime = 300; // time to move into the limit switch [ms]
-const int homeStep = 3; // distance to travel each homing step/loop
+//const int error = 5; // error [pulses] allowable for position control
+//const unsigned int limitTime = 300; // time to move into the limit switch [ms]
+//const int homeStep = 3; // distance to travel each homing step/loop
+const int millivoltRange = 110000; // absolute range of the voltage output [mV]
+const float Vref = 5.0; // reference voltage from the Aref pin
+const float B = 3435.0; // Beta value of the thermistors
+const float R0 = 10000.0; // resistance value of the thermistor at 25degC
+const float ry = R0*exp(-B/298.15); // r @ infinity
 
 // PINS
 //const int dirPin = 4;  //pin to enable (high) driver
@@ -28,7 +33,10 @@ const int buttonPin = 8;  //pushbutton signal in
 //const int limitSwitchPin = 9; //limitSwitch signal in
 //const int encoderApin = 2;  //Best Performance: both pins have interrupt capability
 //const int encoderBpin = 3;  //Best Performance: both pins have interrupt capability
-const int thermistorPin = A0; //Analog Read pin for the Thermistor (Voltage Divider)
+const int thermistorPin1 = A0; //Analog Read pin for the Thermistor (Voltage Divider)
+const int thermistorPin2 = A1; //Analog Read pin for the second Thermistor (Voltage Divider)
+const int heaterPin1 = 10; //PWM pin for the first heater, goes to mosfet gate
+const int heaterPin2 = 11; //PWM pin for the second heater, goes to mosfet gate
 
 // Calculate variables in units of enconder pulses. Note - gear ratio was removed
 float stroke = PPR * 2 * strokeMM / (pulleyRadius * 2 * 3.14);  // stroke [pulses]
