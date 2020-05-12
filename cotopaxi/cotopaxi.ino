@@ -2,7 +2,7 @@
 #include "settings.h"
 
 // VARIABLES
-//bool go = false; // the state of the drive system (go or stop)
+bool go = false; // the state of the drive system (go or stop)
 //bool homed = false;  // has the stepper been properly homed
 //int limitSwitch = LOW;  // the state of the limit switch
 //int8_t dir = 1; //the current state direction of the drive system (up is HIGH)
@@ -12,9 +12,9 @@ int buttonState = HIGH; // the current reading from the input pin
 //float currentSpeed; //the current speed (average) [pulses / ms]
 //int profilePositions[4]; //{x0, x1, x2, x3} x0 is the start position, and x3 is the end position [pulses]
 //unsigned int profileTimes[4]; //{t0, t1, t2, t3} t0 is the start time, and t3 is the end time [ms]
-//bool integrateStart = true; // initializes the start of an integration profile
-float temp1; // temperature reading of the first thermistor
-float temp2; //temperature reading of the second thermistor
+bool integrateStart = true; // initializes the start of an integration profile
+float temp1; // temperature reading of the first thermistor [degK]
+float temp2; //temperature reading of the second thermistor [degK]
 
 void setup() {
   Serial.begin(9600);
@@ -77,7 +77,7 @@ void voltageDriver(float milliVolts, int PWMpin) {
 //  else if (milliVolts < 0) {
 //    digitalWrite(dirPin, HIGH);
 //    analogWrite(PWMpin, map(abs(milliVolts),0,24000,15,255));
-  }
+//  }
   else {
 //    digitalWrite(dirPin, LOW);
     analogWrite(PWMpin, map(abs(milliVolts),0,millivoltRange,0,255));
@@ -124,6 +124,7 @@ void updateSensors(){
       go = !go;       // change system state to go
       Serial.print("GO: ");
       Serial.println(go);
+      if (go) integrateStart = true; // reset integration on PID controller
 //      if (!go && homed) dir = -dir; // reverse directions if motion stopped with button, and homed
     }
   }
@@ -139,190 +140,215 @@ void updateSensors(){
   temp2 = B / log(R2/ry);
 }
 
-void setPosition(int newPosition){
-  voltageDriver(0);
-  encoder.write(newPosition);
-  while (currentSpeed != 0){
-    updateSensors();
-    delay(1);
-  }
-  encoder.write(newPosition);
-  updateSensors();
-}
+//void setPosition(int newPosition){
+//  voltageDriver(0);
+//  encoder.write(newPosition);
+//  while (currentSpeed != 0){
+//    updateSensors();
+//    delay(1);
+//  }
+//  encoder.write(newPosition);
+//  updateSensors();
+//}
 
-void stopNow(){
-  Serial.println("STOPPING");
-  int8_t stopDir = sgn(currentSpeed);
-  unsigned int startTime = millis();
-  int startPosition = currentPosition;
-  if (stopDir == 1) startPosition += 1.4*currentSpeed*sampleTime; // add fudge factor to make stopping smooth
-  else startPosition += 1.0*currentSpeed*sampleTime;
-  float startSpeed = abs(currentSpeed);
-  int distance = accel * (startSpeed/accel) * (startSpeed/accel) / 2;
-  int endPosition = startPosition + stopDir*distance;
-  int posSetpoint = startPosition; // initialize setpoint [pulses]
-  float milliVolts;
-  unsigned int now = startTime;
-  unsigned int lastTime = now;
-  integrateStart = true;
-  while (abs(posSetpoint - endPosition) > error){
-    if (now - lastTime >= sampleTime){
-      int deltaT = now - startTime; // calculate the time change from begginning of stop
-      posSetpoint = startPosition + stopDir*(startSpeed*deltaT - accel*deltaT*deltaT/2); // [pulses]
-      milliVolts = computePID(posSetpoint, currentPosition);
-      voltageDriver(milliVolts);
-      // save static variables for next round
-      lastTime = now;
-    }
-    updateSensors();
-    now = millis();
-  }
-  while (currentSpeed != 0) {
-    if (now - lastTime >= sampleTime){
-      milliVolts = computePID(endPosition, currentPosition);
-      voltageDriver(milliVolts);
-      lastTime = now;
-    }
-    updateSensors();
-    now = millis();
-  }
-  voltageDriver(0);
-  Serial.println("DONE STOPPING");
-}
+//void stopNow(){
+//  Serial.println("STOPPING");
+//  int8_t stopDir = sgn(currentSpeed);
+//  unsigned int startTime = millis();
+//  int startPosition = currentPosition;
+//  if (stopDir == 1) startPosition += 1.4*currentSpeed*sampleTime; // add fudge factor to make stopping smooth
+//  else startPosition += 1.0*currentSpeed*sampleTime;
+//  float startSpeed = abs(currentSpeed);
+//  int distance = accel * (startSpeed/accel) * (startSpeed/accel) / 2;
+//  int endPosition = startPosition + stopDir*distance;
+//  int posSetpoint = startPosition; // initialize setpoint [pulses]
+//  float milliVolts;
+//  unsigned int now = startTime;
+//  unsigned int lastTime = now;
+//  integrateStart = true;
+//  while (abs(posSetpoint - endPosition) > error){
+//    if (now - lastTime >= sampleTime){
+//      int deltaT = now - startTime; // calculate the time change from begginning of stop
+//      posSetpoint = startPosition + stopDir*(startSpeed*deltaT - accel*deltaT*deltaT/2); // [pulses]
+//      milliVolts = computePID(posSetpoint, currentPosition);
+//      voltageDriver(milliVolts);
+//      // save static variables for next round
+//      lastTime = now;
+//    }
+//    updateSensors();
+//    now = millis();
+//  }
+//  while (currentSpeed != 0) {
+//    if (now - lastTime >= sampleTime){
+//      milliVolts = computePID(endPosition, currentPosition);
+//      voltageDriver(milliVolts);
+//      lastTime = now;
+//    }
+//    updateSensors();
+//    now = millis();
+//  }
+//  voltageDriver(0);
+//  Serial.println("DONE STOPPING");
+//}
 
-void homeNow(){
-  Serial.println("HOMING");
-  if (currentSpeed != 0) stopNow();
-  setPosition(0);
-  buildProfile();
-  printProfile();
-  int posSetpoint;
-  float milliVolts;
-  dir = -1;
-  integrateStart = true;
-  unsigned int now = millis();
-  unsigned int lastTime = now - sampleTime;
-  while (!limitSwitch && go){
-    if (now - lastTime >= sampleTime){
-      posSetpoint = integrateProfile(); // [pulses]
-      milliVolts = computePID(posSetpoint, currentPosition);
-      voltageDriver(milliVolts);
-      // save static variables for next round
-      lastTime = now;
-    }
-    updateSensors();
-    now = millis();
-  }
-  if (currentSpeed != 0) stopNow();
-  now = millis();
-  lastTime = now - sampleTime;  
-  posSetpoint = currentPosition;
-  integrateStart = true;
-  while (limitSwitch && go){
-    if (now - lastTime >= sampleTime){
-      posSetpoint += homeStep;
-      milliVolts = computePID(posSetpoint, currentPosition);
-      voltageDriver(milliVolts);
-      lastTime = now;
-    }
-    updateSensors();
-    now = millis();
-  }
-  unsigned int startTime = now;
-  while ((now - startTime) < limitTime && go){
-    if (now - lastTime >= sampleTime){
-      posSetpoint += homeStep;
-      milliVolts = computePID(posSetpoint, currentPosition);
-      voltageDriver(milliVolts);
-      lastTime = now;
-    }
-    updateSensors();
-    now = millis();
-  }
-  voltageDriver(0);
-  lastTime = now - sampleTime;
-  integrateStart = true;
-  while (!limitSwitch && go){
-    if (now - lastTime >= sampleTime){
-      posSetpoint -= homeStep;
-      milliVolts = computePID(posSetpoint, currentPosition);
-      voltageDriver(milliVolts);
-      lastTime = now;
-    }
-    updateSensors();
-    now = millis();
-  }
-  startTime = now;
-  while ((now - startTime) < limitTime && go){
-    if (now - lastTime >= sampleTime){
-      posSetpoint -= homeStep;
-      milliVolts = computePID(posSetpoint, currentPosition);
-      voltageDriver(milliVolts);
-      lastTime = now;
-    }
-    updateSensors();
-    now = millis();
-  }
-  voltageDriver(0);
-  if (limitSwitch && go) {
-    setPosition(0);
-    homed = true;
-  }
-  go = false;
-  dir = 1;
-  lastDir = -1;
-  Serial.println("DONE HOMING");
-}
+//void homeNow(){
+//  Serial.println("HOMING");
+//  if (currentSpeed != 0) stopNow();
+//  setPosition(0);
+//  buildProfile();
+//  printProfile();
+//  int posSetpoint;
+//  float milliVolts;
+//  dir = -1;
+//  integrateStart = true;
+//  unsigned int now = millis();
+//  unsigned int lastTime = now - sampleTime;
+//  while (!limitSwitch && go){
+//    if (now - lastTime >= sampleTime){
+//      posSetpoint = integrateProfile(); // [pulses]
+//      milliVolts = computePID(posSetpoint, currentPosition);
+//      voltageDriver(milliVolts);
+//      // save static variables for next round
+//      lastTime = now;
+//    }
+//    updateSensors();
+//    now = millis();
+//  }
+//  if (currentSpeed != 0) stopNow();
+//  now = millis();
+//  lastTime = now - sampleTime;  
+//  posSetpoint = currentPosition;
+//  integrateStart = true;
+//  while (limitSwitch && go){
+//    if (now - lastTime >= sampleTime){
+//      posSetpoint += homeStep;
+//      milliVolts = computePID(posSetpoint, currentPosition);
+//      voltageDriver(milliVolts);
+//      lastTime = now;
+//    }
+//    updateSensors();
+//    now = millis();
+//  }
+//  unsigned int startTime = now;
+//  while ((now - startTime) < limitTime && go){
+//    if (now - lastTime >= sampleTime){
+//      posSetpoint += homeStep;
+//      milliVolts = computePID(posSetpoint, currentPosition);
+//      voltageDriver(milliVolts);
+//      lastTime = now;
+//    }
+//    updateSensors();
+//    now = millis();
+//  }
+//  voltageDriver(0);
+//  lastTime = now - sampleTime;
+//  integrateStart = true;
+//  while (!limitSwitch && go){
+//    if (now - lastTime >= sampleTime){
+//      posSetpoint -= homeStep;
+//      milliVolts = computePID(posSetpoint, currentPosition);
+//      voltageDriver(milliVolts);
+//      lastTime = now;
+//    }
+//    updateSensors();
+//    now = millis();
+//  }
+//  startTime = now;
+//  while ((now - startTime) < limitTime && go){
+//    if (now - lastTime >= sampleTime){
+//      posSetpoint -= homeStep;
+//      milliVolts = computePID(posSetpoint, currentPosition);
+//      voltageDriver(milliVolts);
+//      lastTime = now;
+//    }
+//    updateSensors();
+//    now = millis();
+//  }
+//  voltageDriver(0);
+//  if (limitSwitch && go) {
+//    setPosition(0);
+//    homed = true;
+//  }
+//  go = false;
+//  dir = 1;
+//  lastDir = -1;
+//  Serial.println("DONE HOMING");
+//}
 
 void loop() {
 
-  //check if system thinks it is at 0 but is not at home
-  if (abs(currentPosition) < error && !limitSwitch && homed) {
-    homed = false;
-    Serial.println("HOME FAILED (OUTSIDE LIMIT)");
-  }
-
-  //check if system is at home and doesn't know it, and travelling downwards
-  if (limitSwitch && abs(currentPosition) > error && dir == -1 && homed) {
-    homed = false;
-    Serial.println("HOME FAILED (INSIDE LIMIT)");
-  }
-
-  //check if target has been reached
-  if (abs(currentPosition - profilePositions[3]) < error && currentSpeed == 0){
-    dir = -dir;
+  unsigned long meltTimerNow = millis();
+  static unsigned long meltTimerLastTime = meltTimerNow - meltTimer;
+  if (meltTimerNow - meltTimerLastTime >= meltTimer){
     go = false;
-    Serial.println("TARGET REACHED");
+    integrateStart = true; // reset integration on PID controller
   }
 
-  //if the direction has changed, update the target and build the profile
-  if (dir != lastDir){
-    if (dir == 1) profilePositions[3] = stroke;
-    else profilePositions[3] = 0;
-    buildProfile();
-    lastDir = dir;
-    integrateStart = true;
-    Serial.println("PROFILE BUILT");
-    printProfile();
-  }
+//  //check if system thinks it is at 0 but is not at home
+//  if (abs(currentPosition) < error && !limitSwitch && homed) {
+//    homed = false;
+//    Serial.println("HOME FAILED (OUTSIDE LIMIT)");
+//  }
+//
+//  //check if system is at home and doesn't know it, and travelling downwards
+//  if (limitSwitch && abs(currentPosition) > error && dir == -1 && homed) {
+//    homed = false;
+//    Serial.println("HOME FAILED (INSIDE LIMIT)");
+//  }
+//
+//  //check if target has been reached
+//  if (abs(currentPosition - profilePositions[3]) < error && currentSpeed == 0){
+//    dir = -dir;
+//    go = false;
+//    Serial.println("TARGET REACHED");
+//  }
+//
+//  //if the direction has changed, update the target and build the profile
+//  if (dir != lastDir){
+//    if (dir == 1) profilePositions[3] = stroke;
+//    else profilePositions[3] = 0;
+//    buildProfile();
+//    lastDir = dir;
+//    integrateStart = true;
+//    Serial.println("PROFILE BUILT");
+//    printProfile();
+//  }
   
   updateSensors();
-  
-  if (go && homed) {
-    //Serial.println("RUNNING");
-    unsigned int now = millis();
-    static unsigned int lastTime = now - sampleTime;
+
+  unsigned int now = millis();
+  static unsigned int lastTime = now - sampleTime;
+  if (go) {
+    //Serial.println("MELTING");
     if (now - lastTime >= sampleTime){
-      int posSetpoint = integrateProfile(); // [pulses]
-      float milliVolts = computePID(posSetpoint, currentPosition);
-      voltageDriver(milliVolts);
+      float milliVolts1 = computePID(highTempSetpoint, temp1);
+      float milliVolts2 = computePID(highTempSetpoint, temp2);
+      voltageDriver(milliVolts1, heaterPin1);
+      voltageDriver(milliVolts1, heaterPin2);
       // save static variables for next round
       lastTime = now;
+      Serial.print("Setpoint: ");
+      Serial.println(highTempSetpoint);
+      Serial.print("Temp 1: ");
+      Serial.print(temp1);
+      Serial.print(", Temp 2: ");
+      Serial.println(temp2);
     }
   }
-  else if (go && !homed) homeNow();
   else {
-    if (currentSpeed != 0) stopNow();
-    voltageDriver(0);
+    if (now - lastTime >= sampleTime){
+      float milliVolts1 = computePID(lowTempSetpoint, temp1);
+      float milliVolts2 = computePID(lowTempSetpoint, temp2);
+      voltageDriver(milliVolts1, heaterPin1);
+      voltageDriver(milliVolts1, heaterPin2);
+      // save static variables for next round
+      lastTime = now;
+      Serial.print("Setpoint [F]: ");
+      Serial.println(lowTempSetpoint);
+      Serial.print("Temp 1 [F]: ");
+      Serial.print(temp1);
+      Serial.print(", Temp 2 [F]: ");
+      Serial.println(temp2);
+    }
   }
 }
