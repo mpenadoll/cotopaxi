@@ -15,7 +15,7 @@ float Kd = 0.0; // derivative gain [V * s / m]
 float pulseKp, pulseKi, pulseKd; // pulse conversion declarations
 
 // CONSTANTS
-const unsigned int sampleTime = 500; //sample time for derivative measurements [ms]
+const unsigned int sampleTime = 1000; //sample time for derivative measurements [ms]
 const unsigned int debounceDelay = 50;  // the debounce time; increase if the output flickers
 //const int error = 5; // error [pulses] allowable for position control
 //const unsigned int limitTime = 300; // time to move into the limit switch [ms]
@@ -28,7 +28,7 @@ const float ry = R0*exp(-B/298.15); // r @ infinity
 const float Rs = 3300.0; // resistance of series resistor in voltage divider
 float lowTempSetpoint = 342.0; // 342.0 degK = 156 degF
 float highTempSetpoint = 355.4; // 355.4 degK = 180 degF
-const unsigned long meltTimer = 60.0 * 60000.0; // time that the melting cycle takes (when the button is clicked) [minutes] * [ms / min] = [ms]
+unsigned long meltTimer = 0.1 * 60000.0; // time that the melting cycle takes (when the button is clicked) [minutes] * [ms / min] = [ms]
 
 // PINS
 //const int dirPin = 4;  //pin to enable (high) driver
