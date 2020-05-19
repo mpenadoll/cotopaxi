@@ -9,26 +9,26 @@
 //float PPR = 1440.0;  // number of pulses of encoder per rev
 
 // Set PID Controller Settings for Position Control
-float Kp = 7800.0; // proportional gain [V / m]
-float Ki = 200.0; // integral gain [V / (m*s)]
-float Kd = 0.0; // derivative gain [V * s / m]
+float Kp = 8.0; // proportional gain [V / K]
+float Ki = 0.07; // integral gain [V / (K*s)]
+float Kd = 20.0; // derivative gain [V * s / K]
 float pulseKp, pulseKi, pulseKd; // pulse conversion declarations
 
 // CONSTANTS
-const unsigned int sampleTime = 1000; //sample time for derivative measurements [ms]
+const unsigned int sampleTime = 300; //sample time for derivative measurements [ms]
 const unsigned int debounceDelay = 50;  // the debounce time; increase if the output flickers
 //const int error = 5; // error [pulses] allowable for position control
 //const unsigned int limitTime = 300; // time to move into the limit switch [ms]
 //const int homeStep = 3; // distance to travel each homing step/loop
-const int millivoltRange = 110000; // absolute range of the voltage output [mV]
-const float Vref = 5.0; // reference voltage from the Aref pin
+const int voltRange = 110; // absolute range of the voltage output [mV]
+const float Vref = 5.0; // reference voltage from the Aref pin [V]
 const float B = 3435.0; // Beta value of the thermistors
 const float R0 = 10000.0; // resistance value of the thermistor at 25degC
 const float ry = R0*exp(-B/298.15); // r @ infinity
-const float Rs = 3300.0; // resistance of series resistor in voltage divider
+const float Rs = 2200.0; // resistance of series resistor in voltage divider
 float lowTempSetpoint = 342.0; // 342.0 degK = 156 degF
 float highTempSetpoint = 355.4; // 355.4 degK = 180 degF
-unsigned long meltTimer = 0.1 * 60000.0; // time that the melting cycle takes (when the button is clicked) [minutes] * [ms / min] = [ms]
+unsigned long meltTimer = 60.0 * 60000.0; // time that the melting cycle takes (when the button is clicked) [minutes] * [ms / min] = [ms]
 
 // PINS
 //const int dirPin = 4;  //pin to enable (high) driver
@@ -40,7 +40,7 @@ const int buttonPin = 8;  //pushbutton signal in
 const int thermistorPin1 = A0; //Analog Read pin for the Thermistor (Voltage Divider)
 const int thermistorPin2 = A1; //Analog Read pin for the second Thermistor (Voltage Divider)
 const int heaterPin1 = 10; //PWM pin for the first heater, goes to mosfet gate
-const int heaterPin2 = 11; //PWM pin for the second heater, goes to mosfet gate
+const int heaterPin2 = 9; //PWM pin for the second heater, goes to mosfet gate
 
 // Calculate variables in units of enconder pulses. Note - gear ratio was removed
 //float stroke = PPR * 2 * strokeMM / (pulleyRadius * 2 * 3.14);  // stroke [pulses]

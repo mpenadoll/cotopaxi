@@ -35,11 +35,11 @@ void setup() {
 
   //---------------------------------------------- Set PWM frequency for D9 & D10 ------------------------------
    
-  //TCCR1B = TCCR1B & B11111000 | B00000001;    // set timer 1 divisor to     1 for PWM frequency of 31372.55 Hz
-  TCCR1B = TCCR1B & B11111000 | B00000010;    // set timer 1 divisor to     8 for PWM frequency of  3921.16 Hz
-  //TCCR1B = TCCR1B & B11111000 | B00000011;    // set timer 1 divisor to    64 for PWM frequency of   490.20 Hz
-  //TCCR1B = TCCR1B & B11111000 | B00000100;    // set timer 1 divisor to   256 for PWM frequency of   122.55 Hz
-  //TCCR1B = TCCR1B & B11111000 | B00000101;    // set timer 1 divisor to  1024 for PWM frequency of    30.64 Hz
+//  TCCR1B = TCCR1B & B11111000 | B00000001;    // set timer 1 divisor to     1 for PWM frequency of 31372.55 Hz
+//  TCCR1B = TCCR1B & B11111000 | B00000010;    // set timer 1 divisor to     8 for PWM frequency of  3921.16 Hz
+//  TCCR1B = TCCR1B & B11111000 | B00000011;    // set timer 1 divisor to    64 for PWM frequency of   490.20 Hz
+//  TCCR1B = TCCR1B & B11111000 | B00000100;    // set timer 1 divisor to   256 for PWM frequency of   122.55 Hz
+  TCCR1B = TCCR1B & B11111000 | B00000101;    // set timer 1 divisor to  1024 for PWM frequency of    30.64 Hz
 
   // setup the temp readings
   for (int i = 0; i < numReadings; i++) {
@@ -78,11 +78,12 @@ void setup() {
   Serial.println(pulseKd,4);
 
   Serial.println("READY");
+  Serial.println("Time [ms], Setpoint [F], Temp1 [F], Volts [V]");
 }
 
-void voltageDriver(float milliVolts, int PWMpin) {
-  milliVolts = constrain(milliVolts, 0, millivoltRange);
-  if (milliVolts <= 0){
+void voltageDriver(float volts, int PWMpin) {
+  volts = constrain(volts, 0, voltRange);
+  if (volts <= 0){
 //    digitalWrite(dirPin, HIGH);
     analogWrite(PWMpin, 0);
   }
@@ -92,7 +93,7 @@ void voltageDriver(float milliVolts, int PWMpin) {
 //  }
   else {
 //    digitalWrite(dirPin, LOW);
-    analogWrite(PWMpin, map(abs(milliVolts),0,millivoltRange,0,255));
+    analogWrite(PWMpin, map(abs(volts),0,voltRange,0,255));
   }
 }
 
@@ -136,7 +137,7 @@ void updateSensors(){
       go = !go;       // change system state to go
       Serial.print("GO: ");
       Serial.println(go);
-      if (go) integrateStart = true; // reset integration on PID controller
+      integrateStart = true; // reset integration on PID controller
 //      if (!go && homed) dir = -dir; // reverse directions if motion stopped with button, and homed
     }
   }
@@ -149,11 +150,11 @@ void updateSensors(){
 
   int analogRead1 = analogRead(thermistorPin1); //read the analog pin (raw 0 to 1023)
   int analogRead2 = analogRead(thermistorPin2);
-  float V1 = analogRead1 * (Vref / 1024.0); // convert the analog reading to voltage
+  float V1 = analogRead1 * (Vref / 1024.0); // convert the analog reading to voltage [V]
   float V2 = analogRead2 * (Vref / 1024.0);
-  float R1 = V1*Rs / (Vref - V1); // convert the voltage to the thermistor resistance
+  float R1 = V1*Rs / (Vref - V1); // convert the voltage to the thermistor resistance [Ohm]
   float R2 = V2*Rs / (Vref - V2);
-  temp1readings[readIndex] = B / log(R1/ry); // covert the resistance to a temperature reading
+  temp1readings[readIndex] = B / log(R1/ry); // covert the resistance to a temperature reading [K]
   temp2readings[readIndex] = B / log(R2/ry);
 
   temp1total += temp1readings[readIndex];
@@ -301,13 +302,23 @@ void updateSensors(){
 //  Serial.println("DONE HOMING");
 //}
 
+void serialPrint(float setpoint, float temp, float volts){
+  unsigned long printTime = millis();
+  Serial.print(printTime); //Time [ms], Setpoint [F], Temp1 [F], Volts [V]
+  Serial.print(", ");
+  Serial.print(setpoint * (9.0/5.0) - 459.67);
+  Serial.print(", ");
+  Serial.print(temp * (9.0/5.0) - 459.67);
+  Serial.print(", ");
+  Serial.println(volts);
+}
+
 void loop() {
 
   unsigned long meltTimerNow = millis();
   static unsigned long meltTimerLastTime = meltTimerNow - meltTimer;
   if (meltTimerNow - meltTimerLastTime >= meltTimer || go == false){
     go = false;
-    integrateStart = true; // reset integration on PID controller
     meltTimerLastTime = meltTimerNow;
   }
 
@@ -348,34 +359,29 @@ void loop() {
   if (go) {
     //Serial.println("MELTING");
     if (now - lastTime >= sampleTime){
-      float milliVolts1 = computePID(highTempSetpoint, temp1);
-      float milliVolts2 = computePID(highTempSetpoint, temp2);
-      voltageDriver(milliVolts1, heaterPin1);
-      voltageDriver(milliVolts1, heaterPin2);
+      float volts1 = computePID(highTempSetpoint, temp1);
+//      float volts2 = computePID(highTempSetpoint, temp2);
+      voltageDriver(volts1, heaterPin1);
+//      voltageDriver(volts2, heaterPin2);
       // save static variables for next round
       lastTime = now;
-      Serial.print("Setpoint [F]: ");
-      Serial.println(highTempSetpoint * (9.0/5.0) - 459.67);
-      Serial.print("Temp 1 [F]: ");
-      Serial.print(temp1 * (9.0/5.0) - 459.67);
-      Serial.print(", Temp 2 [F]: ");
-      Serial.println(temp2 * (9.0/5.0) - 459.67);
+      
+      serialPrint(highTempSetpoint, temp1, volts1);
+      
     }
   }
   else {
     if (now - lastTime >= sampleTime){
-      float milliVolts1 = computePID(lowTempSetpoint, temp1);
-      float milliVolts2 = computePID(lowTempSetpoint, temp2);
-      voltageDriver(milliVolts1, heaterPin1);
-      voltageDriver(milliVolts1, heaterPin2);
+      float volts1 = computePID(lowTempSetpoint, temp1);
+//      float volts2 = computePID(lowTempSetpoint, temp2);
+      voltageDriver(volts1, heaterPin1);
+//      voltageDriver(volts2, heaterPin2);
       // save static variables for next round
       lastTime = now;
-      Serial.print("Setpoint [F]: ");
-      Serial.println(lowTempSetpoint * (9.0/5.0) - 459.67);
-      Serial.print("Temp 1 [F]: ");
-      Serial.print(temp1 * (9.0/5.0) - 459.67);
-      Serial.print(", Temp 2 [F]: ");
-      Serial.println(temp2 * (9.0/5.0) - 459.67);
+
+      serialPrint(lowTempSetpoint, temp1, volts1);
+
+//      Serial.println(volts2);
 //      for (int i = 0; i < numReadings; i++) {
 //        Serial.println(temp1readings[i] * (9.0/5.0) - 459.67);
 //        Serial.println(temp2readings[i] * (9.0/5.0) - 459.67);
