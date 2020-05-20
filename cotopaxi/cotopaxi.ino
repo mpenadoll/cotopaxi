@@ -1,5 +1,10 @@
 // Spice Rack Controller
 #include "settings.h"
+#include "PIDcontroller.h"
+#include <Encoder.h>
+
+PIDloop heater1(Kp, Ki, Kd);
+PIDloop heater2(Kp, Ki, Kd);
 
 // VARIABLES
 bool go = false; // the state of the drive system (go or stop)
@@ -12,10 +17,10 @@ int buttonState = HIGH; // the current reading from the input pin
 //float currentSpeed; //the current speed (average) [pulses / ms]
 //int profilePositions[4]; //{x0, x1, x2, x3} x0 is the start position, and x3 is the end position [pulses]
 //unsigned int profileTimes[4]; //{t0, t1, t2, t3} t0 is the start time, and t3 is the end time [ms]
-bool integrateStart = true; // initializes the start of an integration profile
+//bool integrateStart = true; // initializes the start of an integration profile
 float temp1; // temperature reading of the thermistor [degK]
 float temp2;
-const int numReadings = 4; // number of readings for moving average
+const int numReadings = 5; // number of readings for moving average
 int readIndex; // index to update the readings
 float temp1readings[numReadings]; // for moving average
 float temp2readings[numReadings];
@@ -26,7 +31,7 @@ void setup() {
   Serial.begin(9600);
   
   // put your setup code here, to run once:
-  setGains();
+//  setGains();
   
   pinMode(buttonPin, INPUT_PULLUP);
 //  pinMode(limitSwitchPin, INPUT);
@@ -64,18 +69,18 @@ void setup() {
 //  Serial.println(accelTime,4);
 //  Serial.print("Acceleration Distance [pulses]: ");
 //  Serial.println(accelDistance,4);
-  Serial.print("Kp: ");
-  Serial.println(Kp,4);
-  Serial.print("pulseKp: ");
-  Serial.println(pulseKp,4);
-  Serial.print("Ki: ");
-  Serial.println(Ki,4);
-  Serial.print("pulseKi: ");
-  Serial.println(pulseKi,6);
-  Serial.print("Kd: ");
-  Serial.println(Kd,4);
-  Serial.print("pulseKd: ");
-  Serial.println(pulseKd,4);
+//  Serial.print("Kp: ");
+//  Serial.println(Kp,4);
+//  Serial.print("pulseKp: ");
+//  Serial.println(pulseKp,4);
+//  Serial.print("Ki: ");
+//  Serial.println(Ki,4);
+//  Serial.print("pulseKi: ");
+//  Serial.println(pulseKi,6);
+//  Serial.print("Kd: ");
+//  Serial.println(Kd,4);
+//  Serial.print("pulseKd: ");
+//  Serial.println(pulseKd,4);
 
   Serial.println("READY");
   Serial.println("Time [ms], Setpoint [F], Temp1 [F], Volts [V]");
@@ -137,7 +142,7 @@ void updateSensors(){
       go = !go;       // change system state to go
       Serial.print("GO: ");
       Serial.println(go);
-      integrateStart = true; // reset integration on PID controller
+//      integrateStart = true; // reset integration on PID controller
 //      if (!go && homed) dir = -dir; // reverse directions if motion stopped with button, and homed
     }
   }
@@ -302,15 +307,19 @@ void updateSensors(){
 //  Serial.println("DONE HOMING");
 //}
 
-void serialPrint(float setpoint, float temp, float volts){
+void serialPrint(float setpoint, float temp1, float volts1, float temp2, float volts2){
   unsigned long printTime = millis();
   Serial.print(printTime); //Time [ms], Setpoint [F], Temp1 [F], Volts [V]
   Serial.print(", ");
   Serial.print(setpoint * (9.0/5.0) - 459.67);
   Serial.print(", ");
-  Serial.print(temp * (9.0/5.0) - 459.67);
+  Serial.print(temp1 * (9.0/5.0) - 459.67);
   Serial.print(", ");
-  Serial.println(volts);
+  Serial.print(volts1);
+  Serial.print(", ");
+  Serial.print(temp2 * (9.0/5.0) - 459.67);
+  Serial.print(", ");
+  Serial.println(volts2);
 }
 
 void loop() {
@@ -359,27 +368,27 @@ void loop() {
   if (go) {
     //Serial.println("MELTING");
     if (now - lastTime >= sampleTime){
-      float volts1 = computePID(highTempSetpoint, temp1);
-//      float volts2 = computePID(highTempSetpoint, temp2);
+      float volts1 = heater1.computePID(highTempSetpoint, temp1);
+      float volts2 = heater2.computePID(highTempSetpoint, temp2);
       voltageDriver(volts1, heaterPin1);
-//      voltageDriver(volts2, heaterPin2);
+      voltageDriver(volts2, heaterPin2);
       // save static variables for next round
       lastTime = now;
       
-      serialPrint(highTempSetpoint, temp1, volts1);
+      serialPrint(highTempSetpoint, temp1, volts1, temp2, volts2);
       
     }
   }
   else {
     if (now - lastTime >= sampleTime){
-      float volts1 = computePID(lowTempSetpoint, temp1);
-//      float volts2 = computePID(lowTempSetpoint, temp2);
+      float volts1 = heater1.computePID(lowTempSetpoint, temp1);
+      float volts2 = heater2.computePID(lowTempSetpoint, temp2);
       voltageDriver(volts1, heaterPin1);
-//      voltageDriver(volts2, heaterPin2);
+      voltageDriver(volts2, heaterPin2);
       // save static variables for next round
       lastTime = now;
 
-      serialPrint(lowTempSetpoint, temp1, volts1);
+      serialPrint(lowTempSetpoint, temp1, volts1, temp2, volts2);
 
 //      Serial.println(volts2);
 //      for (int i = 0; i < numReadings; i++) {

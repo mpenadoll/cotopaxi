@@ -12,10 +12,10 @@
 float Kp = 8.0; // proportional gain [V / K]
 float Ki = 0.07; // integral gain [V / (K*s)]
 float Kd = 20.0; // derivative gain [V * s / K]
-float pulseKp, pulseKi, pulseKd; // pulse conversion declarations
+//float pulseKp, pulseKi, pulseKd; // pulse conversion declarations
 
 // CONSTANTS
-const unsigned int sampleTime = 300; //sample time for derivative measurements [ms]
+const unsigned int sampleTime = 200; //sample time for derivative measurements [ms]
 const unsigned int debounceDelay = 50;  // the debounce time; increase if the output flickers
 //const int error = 5; // error [pulses] allowable for position control
 //const unsigned int limitTime = 300; // time to move into the limit switch [ms]
@@ -33,14 +33,14 @@ unsigned long meltTimer = 60.0 * 60000.0; // time that the melting cycle takes (
 // PINS
 //const int dirPin = 4;  //pin to enable (high) driver
 //const int PWMpin = 10; //pin to set pwm on driver for up
-const int buttonPin = 8;  //pushbutton signal in
+const int buttonPin = 13;  //pushbutton signal in
 //const int limitSwitchPin = 9; //limitSwitch signal in
 //const int encoderApin = 2;  //Best Performance: both pins have interrupt capability
 //const int encoderBpin = 3;  //Best Performance: both pins have interrupt capability
 const int thermistorPin1 = A0; //Analog Read pin for the Thermistor (Voltage Divider)
 const int thermistorPin2 = A1; //Analog Read pin for the second Thermistor (Voltage Divider)
-const int heaterPin1 = 10; //PWM pin for the first heater, goes to mosfet gate
-const int heaterPin2 = 9; //PWM pin for the second heater, goes to mosfet gate
+const int heaterPin1 = 9; //PWM pin for the first heater, goes to mosfet gate
+const int heaterPin2 = 10; //PWM pin for the second heater, goes to mosfet gate
 
 // Calculate variables in units of enconder pulses. Note - gear ratio was removed
 //float stroke = PPR * 2 * strokeMM / (pulleyRadius * 2 * 3.14);  // stroke [pulses]
