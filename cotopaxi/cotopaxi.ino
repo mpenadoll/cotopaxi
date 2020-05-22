@@ -3,8 +3,12 @@
 #include "PIDcontroller.h"
 #include <Encoder.h>
 
+// Initialize the PIDloops for the heaters
 PIDloop heater1(Kp, Ki, Kd);
 PIDloop heater2(Kp, Ki, Kd);
+
+// Initialize Encoder (for the Knob)
+Encoder encoder(encoderApin, encoderBpin);
 
 // VARIABLES
 bool go = false; // the state of the drive system (go or stop)
@@ -13,7 +17,8 @@ bool go = false; // the state of the drive system (go or stop)
 //int8_t dir = 1; //the current state direction of the drive system (up is HIGH)
 //int8_t lastDir = 1; //the last direction of the system, to check if it switched
 int buttonState = HIGH; // the current reading from the input pin
-//int currentPosition; //the current position [pulses]
+int currentPosition; //the current position [pulses]
+int tempChange; // the amount to change the target temp by [K]
 //float currentSpeed; //the current speed (average) [pulses / ms]
 //int profilePositions[4]; //{x0, x1, x2, x3} x0 is the start position, and x3 is the end position [pulses]
 //unsigned int profileTimes[4]; //{t0, t1, t2, t3} t0 is the start time, and t3 is the end time [ms]
@@ -34,6 +39,8 @@ void setup() {
 //  setGains();
   
   pinMode(buttonPin, INPUT_PULLUP);
+  pinMode(heaterPin1, OUTPUT);
+  pinMode(heaterPin2, OUTPUT);
 //  pinMode(limitSwitchPin, INPUT);
 //  pinMode(PWMpin, OUTPUT);
 //  pinMode(dirPin, OUTPUT);
@@ -117,17 +124,18 @@ void updateSensors(){
   unsigned int now = millis();
   static unsigned int lastTime = now - sampleTime;
 
-//  // read encoder and calculate the speed
-//  int newPosition = encoder.read();
+  // read encoder and calculate the speed
+  int newPosition = encoder.read();
 //  static int lastPosition = newPosition;
-//  // only calculate the speed if time elapsed has been more than set sample time
+  // only calculate the speed if time elapsed has been more than set sample time
 //  if (now - lastTime >= sampleTime){
 //    currentSpeed = (newPosition - lastPosition)/(float)(now - lastTime);
 //    // save static variables for next round
 //    lastTime = now;
 //    lastPosition = newPosition;
 //  }
-//  currentPosition = newPosition;
+  tempChange = newPosition - currentPosition;
+  currentPosition = newPosition;
 
   static int lastButtonState = HIGH; // the previous reading from the input pin
   static unsigned int lastDebounceTime = 0;  // the last time the output pin was toggled
@@ -320,6 +328,10 @@ void serialPrint(float setpoint, float temp1, float volts1, float temp2, float v
   Serial.print(temp2 * (9.0/5.0) - 459.67);
   Serial.print(", ");
   Serial.println(volts2);
+  Serial.print("Current Position: ");
+  Serial.println(currentPosition);
+  Serial.print("Temp Change: ");
+  Serial.println(tempChange);
 }
 
 void loop() {
@@ -367,6 +379,7 @@ void loop() {
   static unsigned int lastTime = now - sampleTime;
   if (go) {
     //Serial.println("MELTING");
+    highTempSetpoint += tempChange / 4.0 / (9.0/5.0); // convert to F and add to setpoint
     if (now - lastTime >= sampleTime){
       float volts1 = heater1.computePID(highTempSetpoint, temp1);
       float volts2 = heater2.computePID(highTempSetpoint, temp2);
@@ -380,6 +393,7 @@ void loop() {
     }
   }
   else {
+    lowTempSetpoint += tempChange / 4.0 / (9.0/5.0); // convert to F and add to setpoint
     if (now - lastTime >= sampleTime){
       float volts1 = heater1.computePID(lowTempSetpoint, temp1);
       float volts2 = heater2.computePID(lowTempSetpoint, temp2);
