@@ -53,14 +53,14 @@ void setup() {
   display.setTextSize(1);
   display.setTextColor(WHITE);
   display.setCursor(0,0);
-  display.println(F("Hello, Hot Stuff!"));
+  display.println(F("Hey, Hot Stuff!"));
   display.display();
 
   delay(2000);
 
   display.clearDisplay();
   display.setCursor(0,0);
-  display.println(F("Mystic Melter v1.0.0"));
+  display.println(F("Mystic Melter v0.2.0"));
   display.display();
 
   delay(2000);
