@@ -15,7 +15,7 @@ float Kd = 20.0; // derivative gain [V * s / K]
 //float pulseKp, pulseKi, pulseKd; // pulse conversion declarations
 
 // CONSTANTS
-const unsigned int sampleTime = 200; //sample time for derivative measurements [ms]
+const unsigned int sampleTime = 500; //sample time for derivative measurements [ms]
 const unsigned int debounceDelay = 50;  // the debounce time; increase if the output flickers
 //const int error = 5; // error [pulses] allowable for position control
 //const unsigned int limitTime = 300; // time to move into the limit switch [ms]

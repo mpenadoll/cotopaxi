@@ -64,13 +64,13 @@ void setup() {
   display.display();
 
   delay(2000);
-//
-//  display.clearDisplay();
-//  display.setCursor(0,0);
-//  display.println("Hey, Hot Stuff!");
-//  display.display();
-//
-//  delay(1000);
+
+  display.clearDisplay();
+  display.setCursor(0,0);
+  display.println("Mystic Melter v1.0.0");
+  display.display();
+
+  delay(2000);
 
   Serial.begin(9600);
   
@@ -386,6 +386,12 @@ void serialPrint(float setpoint, float temp1, float volts1, float temp2, float v
   display.print(temp1 * (9.0/5.0) - 459.67, 1);
   display.print(", T2: ");
   display.println(temp2 * (9.0/5.0) - 459.67, 1);
+
+//  display.setCursor(0,56);
+//  display.print("V1: ");
+//  display.print(min(max(volts1, 0),voltRange), 1);
+//  display.print(", V2: ");
+//  display.println(min(max(volts2, 0),voltRange), 1);
 
   if (go)
   {
