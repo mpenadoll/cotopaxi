@@ -3,6 +3,25 @@
 #include "PIDcontroller.h"
 #include <Encoder.h>
 
+// Import required libraries for display
+#include <ArducamSSD1306.h>    // Modification of Adafruit_SSD1306 for ESP8266 compatibility
+#include <Adafruit_GFX.h>   // Needs a little change in original Adafruit library (See README.txt file)
+#include <Wire.h>           // For I2C comm, but needed for not getting compile error
+
+/*
+HardWare I2C pins
+A4   SDA
+A5   SCL
+*/
+
+// Pin definitions
+#define OLED_RESET  16  // Pin 15 -RESET digital signal
+
+#define LOGO16_GLCD_HEIGHT 16
+#define LOGO16_GLCD_WIDTH  16
+
+ArducamSSD1306 display(OLED_RESET); // FOR I2C
+
 // Initialize the PIDloops for the heaters
 PIDloop heater1(Kp, Ki, Kd);
 PIDloop heater2(Kp, Ki, Kd);
@@ -33,6 +52,26 @@ float temp1total; // for moving average
 float temp2total;
 
 void setup() {
+  
+  // SSD1306 Init
+  display.begin();  // Switch OLED
+  // Clear the buffer.
+  display.clearDisplay();
+  display.setTextSize(1);
+  display.setTextColor(WHITE);
+  display.setCursor(0,0);
+  display.println("Hello, Hot Stuff!");
+  display.display();
+
+  delay(2000);
+//
+//  display.clearDisplay();
+//  display.setCursor(0,0);
+//  display.println("Hey, Hot Stuff!");
+//  display.display();
+//
+//  delay(1000);
+
   Serial.begin(9600);
   
   // put your setup code here, to run once:
@@ -315,23 +354,56 @@ void updateSensors(){
 //  Serial.println("DONE HOMING");
 //}
 
-void serialPrint(float setpoint, float temp1, float volts1, float temp2, float volts2){
-  unsigned long printTime = millis();
-  Serial.print(printTime); //Time [ms], Setpoint [F], Temp1 [F], Volts [V]
-  Serial.print(", ");
-  Serial.print(setpoint * (9.0/5.0) - 459.67);
-  Serial.print(", ");
-  Serial.print(temp1 * (9.0/5.0) - 459.67);
-  Serial.print(", ");
-  Serial.print(volts1);
-  Serial.print(", ");
-  Serial.print(temp2 * (9.0/5.0) - 459.67);
-  Serial.print(", ");
-  Serial.println(volts2);
-  Serial.print("Current Position: ");
-  Serial.println(currentPosition);
-  Serial.print("Temp Change: ");
-  Serial.println(tempChange);
+void serialPrint(float setpoint, float temp1, float volts1, float temp2, float volts2, long timer){
+//  unsigned long printTime = millis();
+//  Serial.print(printTime); //Time [ms], Setpoint [F], Temp1 [F], Volts [V]
+//  Serial.print(", ");
+//  Serial.print(setpoint * (9.0/5.0) - 459.67);
+//  Serial.print(", ");
+//  Serial.print(temp1 * (9.0/5.0) - 459.67);
+//  Serial.print(", ");
+//  Serial.print(volts1);
+//  Serial.print(", ");
+//  Serial.print(temp2 * (9.0/5.0) - 459.67);
+//  Serial.print(", ");
+//  Serial.println(volts2);
+//  Serial.print("Current Position: ");
+//  Serial.println(currentPosition);
+//  Serial.print("Temp Change: ");
+//  Serial.println(tempChange);
+
+  
+  display.clearDisplay();
+  
+  display.setTextSize(1);
+  display.setCursor(0,16);
+  display.print("TRGT [F]: ");
+  display.setTextSize(2);
+  display.println(setpoint * (9.0/5.0) - 459.67, 1);
+  display.setTextSize(1);
+  display.setCursor(0,36);
+  display.print("T1: ");
+  display.print(temp1 * (9.0/5.0) - 459.67, 1);
+  display.print(", T2: ");
+  display.println(temp2 * (9.0/5.0) - 459.67, 1);
+
+  if (go)
+  {
+    timer = timer / 1000; // convert timer to seconds
+    display.setCursor(0,0);
+    display.print("Mode: MELTING ");
+    display.print(timer / 60); // convert to minutes and print timer
+    display.print(":");
+    display.print(timer % 60); // calculate seconds left in last minute
+  }
+  else
+  {
+    display.setCursor(0,0);
+    display.println("Mode: DIPPING");
+  }
+  
+  display.display();
+
 }
 
 void loop() {
@@ -388,7 +460,7 @@ void loop() {
       // save static variables for next round
       lastTime = now;
       
-      serialPrint(highTempSetpoint, temp1, volts1, temp2, volts2);
+      serialPrint(highTempSetpoint, temp1, volts1, temp2, volts2, (meltTimer - (meltTimerNow - meltTimerLastTime)));
       
     }
   }
@@ -402,7 +474,7 @@ void loop() {
       // save static variables for next round
       lastTime = now;
 
-      serialPrint(lowTempSetpoint, temp1, volts1, temp2, volts2);
+      serialPrint(lowTempSetpoint, temp1, volts1, temp2, volts2, (meltTimer - (meltTimerNow - meltTimerLastTime)));
 
 //      Serial.println(volts2);
 //      for (int i = 0; i < numReadings; i++) {
