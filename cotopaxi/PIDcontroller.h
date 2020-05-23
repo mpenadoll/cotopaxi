@@ -36,13 +36,6 @@ class PIDloop
     
     // update the error
     error = setpoint - feedback;
-  
-//    if (integrateStart) {
-//      lastTime = now - 1;
-//      errSum = 0;
-//      lastErr = error;
-//      integrateStart = false;
-//    }
     
     if (abs(error) < 2.0) errSum += error * timeChange; // prevents integral from growing when error is large
     dErr = (error - lastErr) / (float)timeChange;
@@ -53,18 +46,7 @@ class PIDloop
     
     /*Compute PID Output*/
     output = pulseKp * error + pulseKi * errSum + pulseKd * dErr;
-  
-  //  Serial.print("Kp: ");
-  //  Serial.print(pulseKp * error);
-  //  Serial.print("
     
     return output;
   }
 };
-
-// Convert the gains to the correct units
-//void setGains(){  
-//  pulseKp = Kp ; //proportional gain [V / K]
-//  pulseKi = Ki / 1000.0; //integral gain [V / (ms * K)]
-//  pulseKd = Kd * 1000.0; //derivative gain [V * ms / K]
-//}
