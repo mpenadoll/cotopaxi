@@ -72,7 +72,7 @@ void setup() {
 
   delay(2000);
 
-  Serial.begin(9600);
+//  Serial.begin(9600);
   
   // put your setup code here, to run once:
 //  setGains();
@@ -128,8 +128,8 @@ void setup() {
 //  Serial.print("pulseKd: ");
 //  Serial.println(pulseKd,4);
 
-  Serial.println("READY");
-  Serial.println("Time [ms], Setpoint [F], Temp1 [F], Volts [V]");
+//  Serial.println("READY");
+//  Serial.println("Time [ms], Setpoint [F], Temp1 [F], Volts [V]");
 }
 
 void voltageDriver(float volts, int PWMpin) {
@@ -154,14 +154,11 @@ static inline int8_t sgn(float val) {
  return 1;
 }
 
-void updateSensors(){
+void updateSensors()
+{
   // update button and limit switches
   int reading = digitalRead(buttonPin);  // read the state of the switch into a local variable
 //  limitSwitch = digitalRead(limitSwitchPin);
-
-  // get the time now
-  unsigned int now = millis();
-  static unsigned int lastTime = now - sampleTime;
 
   // read encoder and calculate the speed
   int newPosition = encoder.read();
@@ -172,51 +169,60 @@ void updateSensors(){
 //    // save static variables for next round
 //    lastTime = now;
 //    lastPosition = newPosition;
-//  }
+//  } 
   tempChange = newPosition - currentPosition;
   currentPosition = newPosition;
+
+  unsigned int now = millis();
+  static unsigned int lastTime = now - sampleTime;
 
   static int lastButtonState = HIGH; // the previous reading from the input pin
   static unsigned int lastDebounceTime = 0;  // the last time the output pin was toggled
   // reset the debouncing timer if reading has changed
   if (reading != lastButtonState) lastDebounceTime = now;
 
-  if ((now - lastDebounceTime) > debounceDelay && reading != buttonState) {
+  if ((now - lastDebounceTime) > debounceDelay && reading != buttonState)
+  {
     // whatever the reading is at, it's been there for longer than the debounce
     // delay, and the button state has changed
     buttonState = reading;
-    if (buttonState == LOW) {
+    if (buttonState == LOW)
+    {
       go = !go;       // change system state to go
-      Serial.print("GO: ");
-      Serial.println(go);
+//      Serial.print("GO: ");
+//      Serial.println(go);
 //      integrateStart = true; // reset integration on PID controller
 //      if (!go && homed) dir = -dir; // reverse directions if motion stopped with button, and homed
     }
   }
   lastButtonState = reading; // save the reading. Next time through the loop, it'll be the lastButtonState
 
-
   // Update temperature readings
-  temp1total -= temp1readings[readIndex];
-  temp2total -= temp2readings[readIndex];
+  if (now - lastTime >= sampleTime)
+  {
+    temp1total -= temp1readings[readIndex];
+    temp2total -= temp2readings[readIndex];
+  
+    int analogRead1 = analogRead(thermistorPin1); //read the analog pin (raw 0 to 1023)
+    int analogRead2 = analogRead(thermistorPin2);
+    float V1 = analogRead1 * (Vref / 1024.0); // convert the analog reading to voltage [V]
+    float V2 = analogRead2 * (Vref / 1024.0);
+    float R1 = V1*Rs / (Vref - V1); // convert the voltage to the thermistor resistance [Ohm]
+    float R2 = V2*Rs / (Vref - V2);
+    temp1readings[readIndex] = B / log(R1/ry); // covert the resistance to a temperature reading [K]
+    temp2readings[readIndex] = B / log(R2/ry);
+  
+    temp1total += temp1readings[readIndex];
+    temp2total += temp2readings[readIndex];
+  
+    readIndex += 1;
+    if (readIndex >= numReadings) readIndex = 0;
+  
+    temp1 = temp1total / numReadings;
+    temp2 = temp2total / numReadings;
 
-  int analogRead1 = analogRead(thermistorPin1); //read the analog pin (raw 0 to 1023)
-  int analogRead2 = analogRead(thermistorPin2);
-  float V1 = analogRead1 * (Vref / 1024.0); // convert the analog reading to voltage [V]
-  float V2 = analogRead2 * (Vref / 1024.0);
-  float R1 = V1*Rs / (Vref - V1); // convert the voltage to the thermistor resistance [Ohm]
-  float R2 = V2*Rs / (Vref - V2);
-  temp1readings[readIndex] = B / log(R1/ry); // covert the resistance to a temperature reading [K]
-  temp2readings[readIndex] = B / log(R2/ry);
-
-  temp1total += temp1readings[readIndex];
-  temp2total += temp2readings[readIndex];
-
-  readIndex += 1;
-  if (readIndex >= numReadings) readIndex = 0;
-
-  temp1 = temp1total / numReadings;
-  temp2 = temp2total / numReadings;
+    lastTime = now;
+  }
 }
 
 //void setPosition(int newPosition){
@@ -354,7 +360,8 @@ void updateSensors(){
 //  Serial.println("DONE HOMING");
 //}
 
-void serialPrint(float setpoint, float temp1, float volts1, float temp2, float volts2, long timer){
+void serialPrint(float setpoint, float temp1, float volts1, float temp2, float volts2, long timer)
+{
 //  unsigned long printTime = millis();
 //  Serial.print(printTime); //Time [ms], Setpoint [F], Temp1 [F], Volts [V]
 //  Serial.print(", ");
@@ -387,11 +394,11 @@ void serialPrint(float setpoint, float temp1, float volts1, float temp2, float v
   display.print(", T2: ");
   display.println(temp2 * (9.0/5.0) - 459.67, 1);
 
-//  display.setCursor(0,56);
-//  display.print("V1: ");
-//  display.print(min(max(volts1, 0),voltRange), 1);
-//  display.print(", V2: ");
-//  display.println(min(max(volts2, 0),voltRange), 1);
+  display.setCursor(0,56);
+  display.print("V1: ");
+  display.print(min(max(volts1, 0),voltRange), 1);
+  display.print(", V2: ");
+  display.println(min(max(volts2, 0),voltRange), 1);
 
   if (go)
   {
@@ -412,7 +419,8 @@ void serialPrint(float setpoint, float temp1, float volts1, float temp2, float v
 
 }
 
-void loop() {
+void loop()
+{
 
   unsigned long meltTimerNow = millis();
   static unsigned long meltTimerLastTime = meltTimerNow - meltTimer;
