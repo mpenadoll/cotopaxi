@@ -53,14 +53,14 @@ void setup() {
   display.setTextSize(1);
   display.setTextColor(WHITE);
   display.setCursor(0,0);
-  display.println("Hello, Hot Stuff!");
+  display.println(F("Hello, Hot Stuff!"));
   display.display();
 
   delay(2000);
 
   display.clearDisplay();
   display.setCursor(0,0);
-  display.println("Mystic Melter v1.0.0");
+  display.println(F("Mystic Melter v1.0.0"));
   display.display();
 
   delay(2000);
@@ -190,35 +190,35 @@ void serialPrint(float setpoint, float temp1, float volts1, float temp2, float v
   
   display.setTextSize(1);
   display.setCursor(0,16);
-  display.print("TRGT [F]: ");
+  display.print(F("TRGT [F]: "));
   display.setTextSize(2);
   display.println(setpoint * (9.0/5.0) - 459.67, 1);
   display.setTextSize(1);
   display.setCursor(0,36);
-  display.print("T1: ");
+  display.print(F("T1: "));
   display.print(temp1 * (9.0/5.0) - 459.67, 1);
-  display.print(", T2: ");
+  display.print(F(", T2: "));
   display.println(temp2 * (9.0/5.0) - 459.67, 1);
 
   display.setCursor(0,56);
-  display.print("V1: ");
+  display.print(F("V1: "));
   display.print(min(max(volts1, 0),voltRange), 1);
-  display.print(", V2: ");
+  display.print(F(", V2: "));
   display.println(min(max(volts2, 0),voltRange), 1);
 
   if (go)
   {
     timer = timer / 1000; // convert timer to seconds
     display.setCursor(0,0);
-    display.print("Mode: MELTING ");
+    display.print(F("Mode: MELTING "));
     display.print(timer / 60); // convert to minutes and print timer
-    display.print(":");
+    display.print(F(":"));
     display.print(timer % 60); // calculate seconds left in last minute
   }
   else
   {
     display.setCursor(0,0);
-    display.println("Mode: DIPPING");
+    display.println(F("Mode: DIPPING"));
   }
   
   display.display();

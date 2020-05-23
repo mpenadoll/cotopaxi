@@ -1,9 +1,9 @@
 //Settings file for the spice rack and motor
 
 // Set PID Controller Settings for Position Control
-float Kp = 8.0; // proportional gain [V / K]
-float Ki = 0.07; // integral gain [V / (K*s)]
-float Kd = 20.0; // derivative gain [V * s / K]
+const float Kp = 8.0; // proportional gain [V / K]
+const float Ki = 0.07; // integral gain [V / (K*s)]
+const float Kd = 20.0; // derivative gain [V * s / K]
 
 // CONSTANTS
 const unsigned int sampleTime = 200; //sample time for derivative measurements [ms]
@@ -16,7 +16,7 @@ const float ry = R0*exp(-B/298.15); // r @ infinity
 const float Rs = 2200.0; // resistance of series resistor in voltage divider
 float lowTempSetpoint = 341.483; // 342.0 degK = 156 degF
 float highTempSetpoint = 355.372; // 355.4 degK = 180 degF
-unsigned long meltTimer = 60.0 * 60000.0; // time that the melting cycle takes (when the button is clicked) [minutes] * [ms / min] = [ms]
+const unsigned long meltTimer = 60.0 * 60000.0; // time that the melting cycle takes (when the button is clicked) [minutes] * [ms / min] = [ms]
 
 // PINS
 const int buttonPin = 13;  //pushbutton signal in
