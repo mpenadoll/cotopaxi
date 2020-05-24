@@ -14,9 +14,9 @@ const float B = 3435.0; // Beta value of the thermistors
 const float R0 = 10000.0; // resistance value of the thermistor at 25degC
 const float ry = R0*exp(-B/298.15); // r @ infinity
 const float Rs = 2200.0; // resistance of series resistor in voltage divider
-float lowTempSetpoint = 341.483; // 342.0 degK = 156 degF
-float highTempSetpoint = 355.372; // 355.4 degK = 180 degF
-const unsigned long meltTimer = 60.0 * 60000.0; // time that the melting cycle takes (when the button is clicked) [minutes] * [ms / min] = [ms]
+float lowTempSetpoint = (155 + 459.67) * 5.0/9.0; // temp for dipping [F to K]
+float highTempSetpoint = (180 + 459.67) * 5.0/9.0; // temp for dropping slugs [F to K]
+const unsigned long meltTimer = 2.0 * 60000.0; // time that the melting cycle takes (when the button is clicked) [minutes] * [ms / min] = [ms]
 
 // PINS
 const int buttonPin = 13;  //pushbutton signal in
