@@ -211,6 +211,7 @@ void serialPrint(float setpoint, float temp1, float volts1, float temp2, float v
     timer = timer / 1000; // convert timer to seconds
     display.setCursor(0,0);
     display.print(F("Mode: DROPPIN' SLUGS "));
+    display.setCursor(100,8);
     display.print(timer / 60); // convert to minutes and print timer
     display.print(F(":"));
     display.print(timer % 60); // calculate seconds left in last minute
