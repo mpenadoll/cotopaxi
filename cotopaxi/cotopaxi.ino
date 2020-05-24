@@ -36,7 +36,7 @@ int currentPosition; //the current position [pulses]
 int tempChange; // the amount to change the target temp by [K]
 float temp1; // temperature reading of the thermistor [degK]
 float temp2;
-const int numReadings = 5; // number of readings for moving average
+const int numReadings = 3; // number of readings for moving average
 int readIndex; // index to update the readings
 float temp1readings[numReadings]; // for moving average
 float temp2readings[numReadings];
