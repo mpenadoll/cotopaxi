@@ -6,7 +6,7 @@ const float Ki = 0.07; // integral gain [V / (K*s)]
 const float Kd = 20.0; // derivative gain [V * s / K]
 
 // CONSTANTS
-const unsigned int sampleTime = 200; //sample time for derivative measurements [ms]
+const unsigned int sampleTime = 100; //sample time for derivative measurements [ms]
 const unsigned int debounceDelay = 50;  // the debounce time; increase if the output flickers
 const int voltRange = 110; // absolute range of the voltage output [mV]
 const float Vref = 5.0; // reference voltage from the Aref pin [V]

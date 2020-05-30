@@ -36,15 +36,16 @@ int currentPosition; //the current position [pulses]
 int tempChange; // the amount to change the target temp by [K]
 float temp1; // temperature reading of the thermistor [degK]
 float temp2;
-const int numReadings = 3; // number of readings for moving average
+const int numReadings = 4; // number of readings for moving average
 int readIndex; // index to update the readings
 float temp1readings[numReadings]; // for moving average
 float temp2readings[numReadings];
 float temp1total; // for moving average
 float temp2total;
 
-void setup() {
-  //  Serial.begin(9600);
+void setup()
+{
+//  Serial.begin(9600);
   
   // SSD1306 Init
   display.begin();  // Switch OLED
@@ -60,7 +61,7 @@ void setup() {
 
   display.clearDisplay();
   display.setCursor(0,0);
-  display.println(F("Mystic Melter v0.2.2"));
+  display.println(F("Mystic Melter v0.3.0"));
   display.display();
 
   delay(2000);
@@ -168,7 +169,7 @@ void updateSensors()
   }
 }
 
-void serialPrint(float setpoint, float temp1, float volts1, float temp2, float volts2, long timer)
+void displayPrint(float setpoint, float temp1, float volts1, float temp2, float volts2, long timer)
 {
 //  unsigned long printTime = millis();
 //  Serial.print(printTime); //Time [ms], Setpoint [F], Temp1 [F], Volts [V]
@@ -253,7 +254,7 @@ void loop()
       // save static variables for next round
       lastTime = now;
       
-      serialPrint(highTempSetpoint, temp1, volts1, temp2, volts2, (meltTimer - (meltTimerNow - meltTimerLastTime)));
+      displayPrint(highTempSetpoint, temp1, volts1, temp2, volts2, (meltTimer - (meltTimerNow - meltTimerLastTime)));
       
     }
   }
@@ -267,7 +268,7 @@ void loop()
       // save static variables for next round
       lastTime = now;
 
-      serialPrint(lowTempSetpoint, temp1, volts1, temp2, volts2, (meltTimer - (meltTimerNow - meltTimerLastTime)));
+      displayPrint(lowTempSetpoint, temp1, volts1, temp2, volts2, (meltTimer - (meltTimerNow - meltTimerLastTime)));
 
 //      Serial.println(volts2);
 //      for (int i = 0; i < numReadings; i++) {
