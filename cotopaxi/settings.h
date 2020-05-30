@@ -10,10 +10,12 @@ const unsigned int sampleTime = 200; //sample time for derivative measurements [
 const unsigned int debounceDelay = 50;  // the debounce time; increase if the output flickers
 const int voltRange = 110; // absolute range of the voltage output [mV]
 const float Vref = 5.0; // reference voltage from the Aref pin [V]
-const float B = 3977.0; // Beta value of the thermistors
-const float R0 = 10000.0; // resistance value of the thermistor at 25degC
-const float ry = R0*exp(-B/298.15); // r @ infinity
-const float Rs = 2200.0; // resistance of series resistor in voltage divider
+//const float B = 3977.0; // Beta value of the thermistors
+//const float R0 = 10000.0; // resistance value of the thermistor at 25degC
+//const float ry = R0*exp(-B/298.15); // r @ infinity
+//const float Rs = 2200.0; // resistance of series resistor in voltage divider
+const float m = -25.558; // linearization slope of therm temp [K / V]
+const float b = 399.733; // linearization y-intercept of therm temp [K]
 float lowTempSetpoint = (155 + 459.67) * 5.0/9.0; // temp for dipping [F to K]
 float highTempSetpoint = (180 + 459.67) * 5.0/9.0; // temp for dropping slugs [F to K]
 const unsigned long meltTimer = 2.0 * 60000.0; // time that the melting cycle takes (when the button is clicked) [minutes] * [ms / min] = [ms]

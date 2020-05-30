@@ -148,10 +148,12 @@ void updateSensors()
     int analogRead2 = analogRead(thermistorPin2);
     float V1 = analogRead1 * (Vref / 1024.0); // convert the analog reading to voltage [V]
     float V2 = analogRead2 * (Vref / 1024.0);
-    float R1 = V1*Rs / (Vref - V1); // convert the voltage to the thermistor resistance [Ohm]
-    float R2 = V2*Rs / (Vref - V2);
-    temp1readings[readIndex] = B / log(R1/ry); // covert the resistance to a temperature reading [K]
-    temp2readings[readIndex] = B / log(R2/ry);
+//    float R1 = V1*Rs / (Vref - V1); // convert the voltage to the thermistor resistance [Ohm]
+//    float R2 = V2*Rs / (Vref - V2);
+//    temp1readings[readIndex] = B / log(R1/ry); // covert the resistance to a temperature reading [K]
+//    temp2readings[readIndex] = B / log(R2/ry);
+    temp1readings[readIndex] = m * V1 + b; // solve for linear temp [K]
+    temp2readings[readIndex] = m * V2 + b;
   
     temp1total += temp1readings[readIndex];
     temp2total += temp2readings[readIndex];
