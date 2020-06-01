@@ -17,8 +17,8 @@ const float Vref = 5.0; // reference voltage from the Aref pin [V]
 const float m = -25.558; // linearization slope of therm temp [K / V]
 const float b = 399.733; // linearization y-intercept of therm temp [K]
 float lowTempSetpoint = (155 + 459.67) * 5.0/9.0; // temp for dipping [F to K]
-float highTempSetpoint = (180 + 459.67) * 5.0/9.0; // temp for dropping slugs [F to K]
-const unsigned long meltTimer = 2.0 * 60000.0; // time that the melting cycle takes (when the button is clicked) [minutes] * [ms / min] = [ms]
+float highTempSetpoint = (200 + 459.67) * 5.0/9.0; // temp for dropping slugs [F to K]
+const unsigned long meltTimer = 5.0 * 60000.0; // time that the melting cycle takes (when the button is clicked) [minutes] * [ms / min] = [ms]
 
 // PINS
 const int buttonPin = 13;  //pushbutton signal in
