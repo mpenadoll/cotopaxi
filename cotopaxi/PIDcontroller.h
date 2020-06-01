@@ -15,7 +15,7 @@ class PIDloop
   float dErr;
   unsigned int timeChange;
   unsigned int lastTime;
-  float output;
+//  float output;
 //  bool integrateStart;
   
   // Constructor 
@@ -28,7 +28,7 @@ class PIDloop
     pulseKd = Kd * 1000.0; //derivative gain [V * ms / K]
   }
   
-  float computePID(float setpoint, float feedback)
+  int computePID(float setpoint, float feedback)
   {
     // update the time
     unsigned int now = millis();
@@ -45,8 +45,8 @@ class PIDloop
     lastTime = now;
     
     /*Compute PID Output*/
-    output = pulseKp * error + pulseKi * errSum + pulseKd * dErr;
+//    output = pulseKp * error + pulseKi * errSum + pulseKd * dErr;
     
-    return output;
+    return pulseKp * error + pulseKi * errSum + pulseKd * dErr;
   }
 };

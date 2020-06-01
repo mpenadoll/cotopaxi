@@ -90,7 +90,7 @@ void setup()
 //  Serial.println("Time [ms], Setpoint [F], Temp1 [F], Volts [V]");
 }
 
-void voltageDriver(float volts, int PWMpin) {
+void voltageDriver(int volts, int PWMpin) {
   volts = constrain(volts, 0, voltRange);
   if (volts <= 0){
     analogWrite(PWMpin, 0);
@@ -247,8 +247,8 @@ void loop()
     //Serial.println("MELTING");
     highTempSetpoint += tempChange / 4.0 / (9.0/5.0); // convert to F and add to setpoint
     if (now - lastTime >= sampleTime){
-      float volts1 = heater1.computePID(highTempSetpoint, temp1);
-      float volts2 = heater2.computePID(highTempSetpoint, temp2);
+      int volts1 = heater1.computePID(highTempSetpoint, temp1);
+      int volts2 = heater2.computePID(highTempSetpoint, temp2);
       voltageDriver(volts1, heaterPin1);
       voltageDriver(volts2, heaterPin2);
       // save static variables for next round
@@ -261,8 +261,8 @@ void loop()
   else {
     lowTempSetpoint += tempChange / 4.0 / (9.0/5.0); // convert to F and add to setpoint
     if (now - lastTime >= sampleTime){
-      float volts1 = heater1.computePID(lowTempSetpoint, temp1);
-      float volts2 = heater2.computePID(lowTempSetpoint, temp2);
+      int volts1 = heater1.computePID(lowTempSetpoint, temp1);
+      int volts2 = heater2.computePID(lowTempSetpoint, temp2);
       voltageDriver(volts1, heaterPin1);
       voltageDriver(volts2, heaterPin2);
       // save static variables for next round
