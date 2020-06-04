@@ -61,7 +61,7 @@ void setup()
 
   display.clearDisplay();
   display.setCursor(0,0);
-  display.println(F("Mystic Melter v0.3.0"));
+  display.println(F("Mystic Melter v0.4.0"));
   display.display();
 
   delay(2000);
@@ -69,6 +69,8 @@ void setup()
   pinMode(buttonPin, INPUT_PULLUP);
   pinMode(heaterPin1, OUTPUT);
   pinMode(heaterPin2, OUTPUT);
+  pinMode(thermistorPin1, INPUT);
+  pinMode(thermistorPin2, INPUT);
 
   //---------------------------------------------- Set PWM frequency for D9 & D10 ------------------------------
    

@@ -6,7 +6,7 @@ const float Ki = 0.07; // integral gain [V / (K*s)]
 const float Kd = 20.0; // derivative gain [V * s / K]
 
 // CONSTANTS
-const unsigned int sampleTime = 100; //sample time for derivative measurements [ms]
+const unsigned int sampleTime = 150; //sample time for derivative measurements [ms]
 const unsigned int debounceDelay = 50;  // the debounce time; increase if the output flickers
 const int voltRange = 110; // absolute range of the voltage output [mV]
 const float Vref = 5.0; // reference voltage from the Aref pin [V]
@@ -21,10 +21,10 @@ float highTempSetpoint = (200 + 459.67) * 5.0/9.0; // temp for dropping slugs [F
 const unsigned long meltTimer = 5.0 * 60000.0; // time that the melting cycle takes (when the button is clicked) [minutes] * [ms / min] = [ms]
 
 // PINS
-const int buttonPin = 13;  //pushbutton signal in
+const int buttonPin = 5;  //pushbutton signal in
 const int encoderApin = 2;  //Best Performance: both pins have interrupt capability
 const int encoderBpin = 3;  //Best Performance: both pins have interrupt capability
-const int thermistorPin1 = A0; //Analog Read pin for the Thermistor (Voltage Divider)
-const int thermistorPin2 = A1; //Analog Read pin for the second Thermistor (Voltage Divider)
+const int thermistorPin1 = A2; //Analog Read pin for the Thermistor (Voltage Divider)
+const int thermistorPin2 = A3; //Analog Read pin for the second Thermistor (Voltage Divider)
 const int heaterPin1 = 9; //PWM pin for the first heater, goes to mosfet gate
 const int heaterPin2 = 10; //PWM pin for the second heater, goes to mosfet gate
