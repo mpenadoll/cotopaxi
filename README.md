@@ -8,4 +8,5 @@ Required Libraries
 2. ArducamSSD1306 by supprot
 
 
-For more information on the build, see _insert blog post_
+For more information on the build, see:
+https://thriftybuilder.wixsite.com/thriftybuilder
