@@ -9,4 +9,4 @@ Required Libraries
 
 
 For more information on the build, see:
-https://thriftybuilder.wixsite.com/thriftybuilder
+[ThriftyBuilder: Closed-Loop Wax Heater](https://www.thriftybuilder.dev/post/closed-loop-heater-for-melting-wax)
