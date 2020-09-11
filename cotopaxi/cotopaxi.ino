@@ -267,7 +267,7 @@ void loop()
     voltageDriver(0, heaterPin1);
     voltageDriver(0, heaterPin2);
 
-    displayPrint(0, temp1, 0, temp2, 0, (meltTimer - (meltTimerNow - meltTimerLastTime)));
+    displayPrint((0 + 459.67) * 5.0/9.0, temp1, 0, temp2, 0, (meltTimer - (meltTimerNow - meltTimerLastTime)));
   }
 
   else
