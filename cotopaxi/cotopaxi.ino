@@ -42,6 +42,7 @@ float temp1readings[numReadings]; // for moving average
 float temp2readings[numReadings];
 float temp1total; // for moving average
 float temp2total;
+bool error = false; // error for broken thermistors
 
 void setup()
 {
@@ -155,6 +156,17 @@ void updateSensors()
 //    float R2 = V2*Rs / (Vref - V2);
 //    temp1readings[readIndex] = B / log(R1/ry); // covert the resistance to a temperature reading [K]
 //    temp2readings[readIndex] = B / log(R2/ry);
+
+    // if there is an open circuit, trip the error variable
+    if (abs(V1 - Vref) < 0.1 || abs(V2 - Vref) < 0.1)
+    {
+      error = true;
+    }
+    else
+    {
+      error = false;
+    }
+
     temp1readings[readIndex] = m * V1 + b; // solve for linear temp [K]
     temp2readings[readIndex] = m * V2 + b;
   
@@ -211,20 +223,28 @@ void displayPrint(float setpoint, float temp1, float volts1, float temp2, float 
   display.print(F(", V2: "));
   display.println(min(max(volts2, 0),voltRange), 1);
 
-  if (go)
+  if (error)
   {
-    timer = timer / 1000; // convert timer to seconds
     display.setCursor(0,0);
-    display.print(F("Mode: DROPPIN' SLUGS "));
-    display.setCursor(100,8);
-    display.print(timer / 60); // convert to minutes and print timer
-    display.print(F(":"));
-    display.print(timer % 60); // calculate seconds left in last minute
+    display.println(F("Mode: ERROR"));
   }
   else
   {
-    display.setCursor(0,0);
-    display.println(F("Mode: DIPPING"));
+    if (go)
+    {
+      timer = timer / 1000; // convert timer to seconds
+      display.setCursor(0,0);
+      display.print(F("Mode: DROPPIN' SLUGS "));
+      display.setCursor(100,8);
+      display.print(timer / 60); // convert to minutes and print timer
+      display.print(F(":"));
+      display.print(timer % 60); // calculate seconds left in last minute
+    }
+    else
+    {
+      display.setCursor(0,0);
+      display.println(F("Mode: DIPPING"));
+    }
   }
   
   display.display();
@@ -233,7 +253,6 @@ void displayPrint(float setpoint, float temp1, float volts1, float temp2, float 
 
 void loop()
 {
-
   unsigned long meltTimerNow = millis();
   static unsigned long meltTimerLastTime = meltTimerNow - meltTimer;
   if (meltTimerNow - meltTimerLastTime >= meltTimer || go == false){
@@ -243,40 +262,50 @@ void loop()
   
   updateSensors();
 
-  unsigned int now = millis();
-  static unsigned int lastTime = now - sampleTime;
-  if (go) {
-    //Serial.println("MELTING");
-    highTempSetpoint += tempChange / 4.0 / (9.0/5.0); // convert to F and add to setpoint
-    if (now - lastTime >= sampleTime){
-      int volts1 = heater1.computePID(highTempSetpoint, temp1);
-      int volts2 = heater2.computePID(highTempSetpoint, temp2);
-      voltageDriver(volts1, heaterPin1);
-      voltageDriver(volts2, heaterPin2);
-      // save static variables for next round
-      lastTime = now;
-      
-      displayPrint(highTempSetpoint, temp1, volts1, temp2, volts2, (meltTimer - (meltTimerNow - meltTimerLastTime)));
-      
-    }
+  if (error)
+  {
+    voltageDriver(0, heaterPin1);
+    voltageDriver(0, heaterPin2);
+
+    displayPrint(0, temp1, 0, temp2, 0, (meltTimer - (meltTimerNow - meltTimerLastTime)));
   }
-  else {
-    lowTempSetpoint += tempChange / 4.0 / (9.0/5.0); // convert to F and add to setpoint
-    if (now - lastTime >= sampleTime){
-      int volts1 = heater1.computePID(lowTempSetpoint, temp1);
-      int volts2 = heater2.computePID(lowTempSetpoint, temp2);
-      voltageDriver(volts1, heaterPin1);
-      voltageDriver(volts2, heaterPin2);
-      // save static variables for next round
-      lastTime = now;
 
-      displayPrint(lowTempSetpoint, temp1, volts1, temp2, volts2, (meltTimer - (meltTimerNow - meltTimerLastTime)));
+  else
+  {
+    unsigned int now = millis();
+    static unsigned int lastTime = now - sampleTime;
+    if (go) {
+      //Serial.println("MELTING");
+      highTempSetpoint += tempChange / 4.0 / (9.0/5.0); // convert to F and add to setpoint
+      if (now - lastTime >= sampleTime){
+        int volts1 = heater1.computePID(highTempSetpoint, temp1);
+        int volts2 = heater2.computePID(highTempSetpoint, temp2);
+        voltageDriver(volts1, heaterPin1);
+        voltageDriver(volts2, heaterPin2);
+        // save static variables for next round
+        lastTime = now;
+        
+        displayPrint(highTempSetpoint, temp1, volts1, temp2, volts2, (meltTimer - (meltTimerNow - meltTimerLastTime)));
+      }
+    }
+    else {
+      lowTempSetpoint += tempChange / 4.0 / (9.0/5.0); // convert to F and add to setpoint
+      if (now - lastTime >= sampleTime){
+        int volts1 = heater1.computePID(lowTempSetpoint, temp1);
+        int volts2 = heater2.computePID(lowTempSetpoint, temp2);
+        voltageDriver(volts1, heaterPin1);
+        voltageDriver(volts2, heaterPin2);
+        // save static variables for next round
+        lastTime = now;
 
-//      Serial.println(volts2);
-//      for (int i = 0; i < numReadings; i++) {
-//        Serial.println(temp1readings[i] * (9.0/5.0) - 459.67);
-//        Serial.println(temp2readings[i] * (9.0/5.0) - 459.67);
-//      }
+        displayPrint(lowTempSetpoint, temp1, volts1, temp2, volts2, (meltTimer - (meltTimerNow - meltTimerLastTime)));
+
+  //      Serial.println(volts2);
+  //      for (int i = 0; i < numReadings; i++) {
+  //        Serial.println(temp1readings[i] * (9.0/5.0) - 459.67);
+  //        Serial.println(temp2readings[i] * (9.0/5.0) - 459.67);
+  //      }
+      }
     }
   }
 }
