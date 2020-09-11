@@ -62,7 +62,7 @@ void setup()
 
   display.clearDisplay();
   display.setCursor(0,0);
-  display.println(F("Mystic Melter v0.4.0"));
+  display.println(F("Mystic Melter v0.5.0"));
   display.display();
 
   delay(2000);
