@@ -1,9 +1,9 @@
 //Settings file for the spice rack and motor
 
 // Set PID Controller Settings for Position Control
-const float Kp = 8.0; // proportional gain [V / K]
-const float Ki = 0.07; // integral gain [V / (K*s)]
-const float Kd = 20.0; // derivative gain [V * s / K]
+const float Kp = 9.0; // proportional gain [V / K]
+const float Ki = 0.05; // integral gain [V / (K*s)]
+const float Kd = 30.0; // derivative gain [V * s / K]
 
 // CONSTANTS
 const unsigned int sampleTime = 150; //sample time for derivative measurements [ms]
