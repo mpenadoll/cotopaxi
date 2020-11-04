@@ -47,7 +47,20 @@ class PIDloop
     
     /*Compute PID Output*/
 //    output = pulseKp * error + pulseKi * errSum + pulseKd * dErr;
-    
+//    static unsigned int lastPrintTime = now;
+//    if (now - lastPrintTime > 1000)
+//    {
+//      Serial.print("error: ");
+//      Serial.println(error);
+//      Serial.print("errSum: ");
+//      Serial.println(errSum);
+//      Serial.print("dErr: ");
+//      Serial.println(dErr);
+//      Serial.print("output: ");
+//      Serial.println(pulseKp * error + pulseKi * errSum + pulseKd * dErr);
+//      lastPrintTime = now;
+//    }
+//    
     return pulseKp * error + pulseKi * errSum + pulseKd * dErr;
   }
 };

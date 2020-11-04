@@ -16,7 +16,7 @@ const float Vref = 5.0; // reference voltage from the Aref pin [V]
 //const float Rs = 2200.0; // resistance of series resistor in voltage divider
 const float m = -25.558; // linearization slope of therm temp [K / V]
 const float b = 399.733; // linearization y-intercept of therm temp [K]
-float lowTempSetpoint = (155 + 459.67) * 5.0/9.0; // temp for dipping [F to K]
+float lowTempSetpoint = (154 + 459.67) * 5.0/9.0; // temp for dipping [F to K]
 float highTempSetpoint = (200 + 459.67) * 5.0/9.0; // temp for dropping slugs [F to K]
 const unsigned long meltTimer = 5.0 * 60000.0; // time that the melting cycle takes (when the button is clicked) [minutes] * [ms / min] = [ms]
 
