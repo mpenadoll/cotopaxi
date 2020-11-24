@@ -169,7 +169,7 @@ void updateSensors()
     readIndex += 1;
     if (readIndex >= numReadings) readIndex = 0;
   
-    temp1 = temp1total / numReadings + 0.28;
+    temp1 = temp1total / numReadings + 0.56;
     temp2 = temp2total / numReadings;
 
     lastTime = now;
