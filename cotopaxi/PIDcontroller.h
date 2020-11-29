@@ -36,8 +36,8 @@ class PIDloop
     
     // update the error
     error = setpoint - feedback;
-    
-    if (abs(error) < 2.0) errSum += error * timeChange; // prevents integral from growing when error is large
+
+    if (abs(error) < 3.0) errSum += error * timeChange; // prevents integral from growing when error is large
     dErr = (error - lastErr) / (float)timeChange;
     
     // Save static variables for next round
@@ -46,7 +46,20 @@ class PIDloop
     
     /*Compute PID Output*/
 //    output = pulseKp * error + pulseKi * errSum + pulseKd * dErr;
-    
+//    static unsigned int lastPrintTime = now;
+//    if (now - lastPrintTime > 1000)
+//    {
+//      Serial.print("error: ");
+//      Serial.println(error);
+//      Serial.print("errSum: ");
+//      Serial.println(errSum);
+//      Serial.print("dErr: ");
+//      Serial.println(dErr);
+//      Serial.print("output: ");
+//      Serial.println(pulseKp * error + pulseKi * errSum + pulseKd * dErr);
+//      lastPrintTime = now;
+//    }
+//    
     return pulseKp * error + pulseKi * errSum + pulseKd * dErr;
   }
 };

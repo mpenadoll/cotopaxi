@@ -58,14 +58,7 @@ void setup()
   display.println(F("Hey, Hot Stuff!"));
   display.display();
 
-  delay(2000);
-
-  display.clearDisplay();
-  display.setCursor(0,0);
-  display.println(F("Mystic Melter v0.5.0"));
-  display.display();
-
-  delay(2000);
+  delay(3000);
   
   pinMode(buttonPin, INPUT_PULLUP);
   pinMode(heaterPin1, OUTPUT);
@@ -89,7 +82,7 @@ void setup()
   
   updateSensors();
 
-//  Serial.println("READY");
+  Serial.println("READY");
 //  Serial.println("Time [ms], Setpoint [F], Temp1 [F], Volts [V]");
 }
 
