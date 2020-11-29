@@ -38,8 +38,6 @@ class PIDloop
     error = setpoint - feedback;
 
     if (abs(error) < 3.0) errSum += error * timeChange; // prevents integral from growing when error is large
-//    if (error < 2.0 && error > 0) errSum += error * timeChange; // prevents integral from growing when error is large or negative
-//    else errSum = 0; // unless you are in the integral window, reset errSum to 0
     dErr = (error - lastErr) / (float)timeChange;
     
     // Save static variables for next round
