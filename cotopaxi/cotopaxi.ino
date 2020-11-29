@@ -96,9 +96,7 @@ static inline int8_t sgn(float val) {
 
 void updateSensors()
 {
-  // update button, encoder knob, and thermistors
-  
-  int reading = digitalRead(buttonPin);  // read the state of the switch into a local variable
+  // update encoder knob, and thermistor
 
   // read encoder and calculate the speed
   int newPosition = encoder.read();
@@ -113,8 +111,8 @@ void updateSensors()
   {
     tempTotal -= tempReadings[readIndex];
   
-    int analogRead = analogRead(thermistorPin); //read the analog pin (raw 0 to 1023)
-    float V = analogRead * (Vref / 1024.0); // convert the analog reading to voltage [V]
+    int analogReading = analogRead(thermistorPin); //read the analog pin (raw 0 to 1023)
+    float V = analogReading * (Vref / 1024.0); // convert the analog reading to voltage [V]
 
     // if there is an open circuit, trip the error variable
     if (abs(V - Vref) < 0.1) error = true;
@@ -208,7 +206,7 @@ void loop()
       // save static variables for next round
       lastTime = now;
 
-      displayPrint(lowTempSetpoint, temp, volts);
+      displayPrint(tempSetpoint, temp, volts);
 
 //      Serial.println(volts2);
 //      for (int i = 0; i < numReadings; i++) {
