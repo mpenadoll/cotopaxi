@@ -1,6 +1,8 @@
 // Spice Rack Controller
 #include "settings.h"
 #include "PIDcontroller.h"
+#include "thermistor.h"
+#include "button.h"
 #include <Encoder.h>
 
 // Import required libraries for display
@@ -28,9 +30,10 @@ PIDloop heater(Kp, Ki, Kd);
 // Initialize Encoder (for the Knob)
 Encoder encoder(encoderApin, encoderBpin);
 
+// Initialize momentary button for alternating control
+momentaryButton alternateButton(buttonPin, debounceDelay);
+
 // VARIABLES
-bool go = false; // the state of the drive system (go or stop)
-int buttonState = HIGH; // the current reading from the input pin
 int currentPosition; //the current position [pulses]
 int tempChange; // the amount to change the target temp by [K]
 float temp; // temperature reading of the thermistor [degK]
@@ -56,8 +59,8 @@ void setup()
 
   delay(3000);
   
-  pinMode(heaterPin, OUTPUT);
-  pinMode(thermistorPin, INPUT);
+  pinMode(heater1pin, OUTPUT);
+  pinMode(thermistor1pin, INPUT);
 
   //---------------------------------------------- Set PWM frequency for D9 & D10 ------------------------------
    
@@ -111,7 +114,7 @@ void updateSensors()
   {
     tempTotal -= tempReadings[readIndex];
   
-    int analogReading = analogRead(thermistorPin); //read the analog pin (raw 0 to 1023)
+    int analogReading = analogRead(thermistor1pin); //read the analog pin (raw 0 to 1023)
     float V = analogReading * (Vref / 1024.0); // convert the analog reading to voltage [V]
 
     // if there is an open circuit, trip the error variable
@@ -188,7 +191,7 @@ void loop()
 
   if (error)
   {
-    voltageDriver(0, heaterPin);
+    voltageDriver(0, heater1pin);
 
     displayPrint((0 + 459.67) * 5.0/9.0, temp, 0);
   }
@@ -201,7 +204,7 @@ void loop()
     if (now - lastTime >= sampleTime){
 
       int volts = heater.computePID(tempSetpoint, temp);
-      voltageDriver(volts, heaterPin);
+      voltageDriver(volts, heater1pin);
 
       // save static variables for next round
       lastTime = now;
