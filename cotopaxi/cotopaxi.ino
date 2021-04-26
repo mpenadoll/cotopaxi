@@ -25,7 +25,8 @@ A5   SCL
 ArducamSSD1306 display(OLED_RESET); // FOR I2C
 
 // Initialize the PIDloops for the heaters
-PIDloop heater(Kp, Ki, Kd);
+PIDloop heater1(Kp, Ki, Kd);
+PIDloop heater2(Kp, Ki, Kd);
 
 // Initialize Encoder (for the Knob)
 Encoder encoder(encoderApin, encoderBpin);
@@ -35,22 +36,18 @@ momentaryButton alternateButton(buttonPin, debounceDelay);
 
 // VARIABLES
 int currentPosition; //the current position [pulses]
-int tempChange; // the amount to change the target temp by [K]
-float temp; // temperature reading of the thermistor [degK]
-const int numReadings = 4; // number of readings for moving average
-int readIndex; // index to update the readings
-float tempReadings[numReadings]; // for moving average
-float tempTotal; // for moving average
 bool error = false; // error for broken thermistors
+
+thermistor temp1(thermistor1pin);
+thermistor temp2(thermistor2pin);
 
 void setup()
 {
-//  Serial.begin(9600);
+  // Serial.begin(9600);
   
   // SSD1306 Init
   display.begin();  // Switch OLED
-  // Clear the buffer.
-  display.clearDisplay();
+  display.clearDisplay(); // Clear the buffer
   display.setTextSize(1);
   display.setTextColor(WHITE);
   display.setCursor(0,0);
@@ -60,7 +57,7 @@ void setup()
   delay(3000);
   
   pinMode(heater1pin, OUTPUT);
-  pinMode(thermistor1pin, INPUT);
+  pinMode(heater2pin, OUTPUT);
 
   //---------------------------------------------- Set PWM frequency for D9 & D10 ------------------------------
    
@@ -69,13 +66,8 @@ void setup()
 //  TCCR1B = TCCR1B & B11111000 | B00000011;    // set timer 1 divisor to    64 for PWM frequency of   490.20 Hz
 //  TCCR1B = TCCR1B & B11111000 | B00000100;    // set timer 1 divisor to   256 for PWM frequency of   122.55 Hz
   TCCR1B = TCCR1B & B11111000 | B00000101;    // set timer 1 divisor to  1024 for PWM frequency of    30.64 Hz
-
-  // setup the temp readings
-  for (int i = 0; i < numReadings; i++) {
-    tempReadings[i] = 0;
-  }
   
-  updateSensors();
+  updateKnob();
 
   Serial.println("READY");
 //  Serial.println("Time [ms], Setpoint [F], Temp1 [F], Volts [V]");
@@ -97,40 +89,12 @@ static inline int8_t sgn(float val) {
  return 1;
 }
 
-void updateSensors()
+void updateKnob()
 {
-  // update encoder knob, and thermistor
-
-  // read encoder and calculate the speed
+  // update encoder knob for temperature change command
   int newPosition = encoder.read();
   tempChange = newPosition - currentPosition;
   currentPosition = newPosition;
-
-  unsigned int now = millis();
-  static unsigned int lastTime = now - sampleTime;
-
-  // Update temperature readings
-  if (now - lastTime >= sampleTime)
-  {
-    tempTotal -= tempReadings[readIndex];
-  
-    int analogReading = analogRead(thermistor1pin); //read the analog pin (raw 0 to 1023)
-    float V = analogReading * (Vref / 1024.0); // convert the analog reading to voltage [V]
-
-    // if there is an open circuit, trip the error variable
-    if (abs(V - Vref) < 0.1) error = true;
-    else error = false;
-
-    tempReadings[readIndex] = m * V + b; // solve for linear temp [K]
-    tempTotal += tempReadings[readIndex];
-  
-    readIndex += 1;
-    if (readIndex >= numReadings) readIndex = 0;
-  
-    temp = tempTotal / numReadings;
-
-    lastTime = now;
-  }
 }
 
 void displayPrint(float setpoint, float temp, float volts)
@@ -187,7 +151,7 @@ void displayPrint(float setpoint, float temp, float volts)
 void loop()
 {
   
-  updateSensors();
+  updateKnob();
 
   if (error)
   {
@@ -203,13 +167,16 @@ void loop()
     tempSetpoint += tempChange / 4.0 / (9.0/5.0); // convert to F and add to setpoint
     if (now - lastTime >= sampleTime){
 
-      int volts = heater.computePID(tempSetpoint, temp);
+      int volts = heater1.computePID(tempSetpoint, temp1.getTemp());
       voltageDriver(volts, heater1pin);
+
+      int volts2 = heater2.computePID(tempSetpoint, temp2.getTemp());
+      voltageDriver(volts1, heater2pin);
 
       // save static variables for next round
       lastTime = now;
 
-      displayPrint(tempSetpoint, temp, volts);
+      displayPrint(tempSetpoint, temp, volts1);
 
 //      Serial.println(volts2);
 //      for (int i = 0; i < numReadings; i++) {
