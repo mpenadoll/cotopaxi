@@ -8,10 +8,6 @@ const float Kd = 15.0; // derivative gain [V * s / K]
 // CONSTANTS
 const unsigned int sampleTime = 150; //sample time for derivative measurements [ms]
 const unsigned int debounceDelay = 50;  // the debounce time; increase if the output flickers
-const int voltRange = 120; // absolute range of the voltage output [mV]
-const float Vref = 5.0; // reference voltage from the Aref pin [V]
-const float m = -25.558; // linearization slope of therm temp [K / V]
-const float b = 399.733; // linearization y-intercept of therm temp [K]
 float tempSetpoint = (160 + 459.67) * 5.0/9.0; // temp for dipping [F to K]
 
 // PINS

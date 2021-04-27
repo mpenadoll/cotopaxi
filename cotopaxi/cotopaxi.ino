@@ -25,21 +25,21 @@ A5   SCL
 ArducamSSD1306 display(OLED_RESET); // FOR I2C
 
 // Initialize the PIDloops for the heaters
-PIDloop heater1(Kp, Ki, Kd);
-PIDloop heater2(Kp, Ki, Kd);
+PIDloop heater1(thermistor1pin, heater1pin, Kp, Ki, Kd);
+PIDloop heater2(thermistor2pin, heater2pin, Kp, Ki, Kd);
 
 // Initialize Encoder (for the Knob)
 Encoder encoder(encoderApin, encoderBpin);
 
 // Initialize momentary button for alternating control
-momentaryButton alternateButton(buttonPin, debounceDelay);
+toggleButton indexButton(buttonPin, debounceDelay);
+bool toggle = false; // toggle for alternating through heater adjustment
 
 // VARIABLES
 int currentPosition; //the current position [pulses]
-bool error = false; // error for broken thermistors
-
-thermistor temp1(thermistor1pin);
-thermistor temp2(thermistor2pin);
+int tempChange; // the amount to change the target temp by [K]
+int heaterIndex = 0; // heater index to cycle knob for setting temp
+const int numHeaters = 2; // number of heaters
 
 void setup()
 {
@@ -55,9 +55,6 @@ void setup()
   display.display();
 
   delay(3000);
-  
-  pinMode(heater1pin, OUTPUT);
-  pinMode(heater2pin, OUTPUT);
 
   //---------------------------------------------- Set PWM frequency for D9 & D10 ------------------------------
    
@@ -73,17 +70,8 @@ void setup()
 //  Serial.println("Time [ms], Setpoint [F], Temp1 [F], Volts [V]");
 }
 
-void voltageDriver(int volts, int PWMpin) {
-  volts = constrain(volts, 0, voltRange);
-  if (volts <= 0){
-    analogWrite(PWMpin, 0);
-  }
-  else {
-    analogWrite(PWMpin, map(abs(volts),0,voltRange,0,255));
-  }
-}
-
-static inline int8_t sgn(float val) {
+static inline int8_t sgn(float val)
+{
  if (val < 0) return -1;
  if (val==0) return 0;
  return 1;
@@ -95,9 +83,16 @@ void updateKnob()
   int newPosition = encoder.read();
   tempChange = newPosition - currentPosition;
   currentPosition = newPosition;
+
+  if indexButton.updateButton(toggle)
+  {
+    heaterIndex += 1;
+    if (heaterIndex >= numHeaters) heaterIndex = 0;
+    toggle = false;
+  }
 }
 
-void displayPrint(float setpoint, float temp, float volts)
+void displayPrint(float setpoint, float temp, float volts, bool heaterFail)
 {
 //  unsigned long printTime = millis();
 //  Serial.print(printTime); //Time [ms], Setpoint [F], Temp1 [F], Volts [V]
@@ -131,7 +126,7 @@ void displayPrint(float setpoint, float temp, float volts)
 
   display.setCursor(0,56);
   display.print(F("V: "));
-  display.print(min(max(volts, 0),voltRange), 1);
+  display.print(volts, 1);
 
   if (error)
   {
@@ -145,44 +140,52 @@ void displayPrint(float setpoint, float temp, float volts)
   }
   
   display.display();
-
 }
 
 void loop()
 {
-  
   updateKnob();
 
-  if (error)
+  if (heaterIndex == 0) heater1.changeTarget(tempChange);
+  else heater2.changeTarget(tempChange);
+
+  unsigned int now = millis();
+  static unsigned int lastTime = now - sampleTime;
+
+  if (now - lastTime >= sampleTime)
   {
-    voltageDriver(0, heater1pin);
+    display.clearDisplay();
+    
+    display.setTextSize(1);
+    display.setCursor(0,16);
+    display.print(F("TRGT [F]: "));
+    display.setTextSize(2);
 
-    displayPrint((0 + 459.67) * 5.0/9.0, temp, 0);
-  }
+    if (heater1.run()) display.println(heater1.getTarget() * (9.0/5.0) - 459.67, 1);
+    else display.println("ERROR")
 
-  else
-  {
-    unsigned int now = millis();
-    static unsigned int lastTime = now - sampleTime;
-    tempSetpoint += tempChange / 4.0 / (9.0/5.0); // convert to F and add to setpoint
-    if (now - lastTime >= sampleTime){
+    display.setTextSize(1);
+    display.setCursor(0,36);
+    display.print(F("TEMP: "));
+    display.print(heater1.getTemp());
 
-      int volts = heater1.computePID(tempSetpoint, temp1.getTemp());
-      voltageDriver(volts, heater1pin);
+    display.setCursor(0,56);
+    display.print(F("V: "));
+    display.print(volts, 1);
+    
 
-      int volts2 = heater2.computePID(tempSetpoint, temp2.getTemp());
-      voltageDriver(volts1, heater2pin);
+    if (heater2.run()) display.println(heater2.getTarget() * (9.0/5.0) - 459.67, 1);
+    else display.println("ERROR")
+    
+    // save static variables for next round
+    lastTime = now;
 
-      // save static variables for next round
-      lastTime = now;
-
-      displayPrint(tempSetpoint, temp, volts1);
+    displayPrint(tempSetpoint, temp, volts1);
 
 //      Serial.println(volts2);
 //      for (int i = 0; i < numReadings; i++) {
 //        Serial.println(temp1readings[i] * (9.0/5.0) - 459.67);
 //        Serial.println(temp2readings[i] * (9.0/5.0) - 459.67);
 //      }
-    }
   }
 }
