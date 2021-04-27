@@ -1,7 +1,6 @@
 // Spice Rack Controller
 #include "settings.h"
-#include "PIDcontroller.h"
-#include "thermistor.h"
+#include "heater.h"
 #include "button.h"
 #include <Encoder.h>
 
@@ -92,56 +91,6 @@ void updateKnob()
   }
 }
 
-void displayPrint(float setpoint, float temp, float volts, bool heaterFail)
-{
-//  unsigned long printTime = millis();
-//  Serial.print(printTime); //Time [ms], Setpoint [F], Temp1 [F], Volts [V]
-//  Serial.print(", ");
-//  Serial.print(setpoint * (9.0/5.0) - 459.67);
-//  Serial.print(", ");
-//  Serial.print(temp1 * (9.0/5.0) - 459.67);
-//  Serial.print(", ");
-//  Serial.print(volts1);
-//  Serial.print(", ");
-//  Serial.print(temp2 * (9.0/5.0) - 459.67);
-//  Serial.print(", ");
-//  Serial.println(volts2);
-//  Serial.print("Current Position: ");
-//  Serial.println(currentPosition);
-//  Serial.print("Temp Change: ");
-//  Serial.println(tempChange);
-
-  
-  display.clearDisplay();
-  
-  display.setTextSize(1);
-  display.setCursor(0,16);
-  display.print(F("TRGT [F]: "));
-  display.setTextSize(2);
-  display.println(setpoint * (9.0/5.0) - 459.67, 1);
-  display.setTextSize(1);
-  display.setCursor(0,36);
-  display.print(F("TEMP: "));
-  display.print(temp * (9.0/5.0) - 459.67, 1);
-
-  display.setCursor(0,56);
-  display.print(F("V: "));
-  display.print(volts, 1);
-
-  if (error)
-  {
-    display.setCursor(0,0);
-    display.println(F("Mode: ERROR"));
-  }
-  else
-  {
-    display.setCursor(0,0);
-    display.println(F("Mode: DIPPING"));
-  }
-  
-  display.display();
-}
-
 void loop()
 {
   updateKnob();
@@ -155,32 +104,49 @@ void loop()
   if (now - lastTime >= sampleTime)
   {
     display.clearDisplay();
-    
+
     display.setTextSize(1);
-    display.setCursor(0,16);
-    display.print(F("TRGT [F]: "));
+    display.setCursor(0,0);
+    display.print(F(" HEATER 1"));
+    display.setCursor(64,0);
+    display.println(F("| HEATER 2"));
+    display.println(F("|"));
+    display.println(F("|"));
+    display.println(F("|"));
+    
     display.setTextSize(2);
+    display.setCursor(0,16);
 
     if (heater1.run()) display.println(heater1.getTarget() * (9.0/5.0) - 459.67, 1);
-    else display.println("ERROR")
+    else display.println(F("ERROR"));
 
     display.setTextSize(1);
     display.setCursor(0,36);
     display.print(F("TEMP: "));
-    display.print(heater1.getTemp());
+    display.print(heater1.getTemp(), 1);
 
     display.setCursor(0,56);
     display.print(F("V: "));
-    display.print(volts, 1);
+    display.print(heater1.getVolts(), 1);
     
 
+    display.setTextSize(2);
+    display.setCursor(66,16);
+
     if (heater2.run()) display.println(heater2.getTarget() * (9.0/5.0) - 459.67, 1);
-    else display.println("ERROR")
+    else display.println(F("ERROR"));
+
+    display.setTextSize(1);
+    display.setCursor(66,36);
+    display.print(F("TEMP: "));
+    display.print(heater2.getTemp(), 1);
+
+    display.setCursor(66,56);
+    display.print(F("V: "));
+    display.print(heater2.getVolts(), 1);
     
     // save static variables for next round
     lastTime = now;
-
-    displayPrint(tempSetpoint, temp, volts1);
 
 //      Serial.println(volts2);
 //      for (int i = 0; i < numReadings; i++) {
