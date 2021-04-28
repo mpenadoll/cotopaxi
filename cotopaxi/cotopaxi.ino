@@ -79,7 +79,7 @@ void setup()
 }
 
 void voltageDriver(int volts, int PWMpin) {
-  volts = constrain(volts, 0, voltRange);
+  volts = constrain(volts, 0, voltMax);
   if (volts <= 0){
     analogWrite(PWMpin, 0);
   }
