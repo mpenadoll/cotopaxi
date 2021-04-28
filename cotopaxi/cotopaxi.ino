@@ -24,8 +24,8 @@ A5   SCL
 ArducamSSD1306 display(OLED_RESET); // FOR I2C
 
 // Initialize the PIDloops for the heaters
-PIDloop heater1(thermistor1pin, heater1pin, Kp, Ki, Kd);
-PIDloop heater2(thermistor2pin, heater2pin, Kp, Ki, Kd);
+heater heater1(thermistor1pin, heater1pin, Kp, Ki, Kd, tempSetpoint);
+heater heater2(thermistor2pin, heater2pin, Kp, Ki, Kd, tempSetpoint);
 
 // Initialize Encoder (for the Knob)
 Encoder encoder(encoderApin, encoderBpin);
@@ -83,7 +83,7 @@ void updateKnob()
   tempChange = newPosition - currentPosition;
   currentPosition = newPosition;
 
-  if indexButton.updateButton(toggle)
+  if (indexButton.updateButton(toggle))
   {
     heaterIndex += 1;
     if (heaterIndex >= numHeaters) heaterIndex = 0;

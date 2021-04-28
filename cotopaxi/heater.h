@@ -22,14 +22,10 @@ class heater
 {
   // class member varibales - thermistor
   float temp; // temperature reading of the thermistor [degK]
-  const int numReadings = 4; // number of readings for moving average
   int readIndex; // index to update the readings
   float tempReadings[numReadings]; // for moving average
   float tempTotal; // for moving average
-  const int thermistorPin; // analog pin for thermistor reading
-  const float Vref = 5.0; // reference voltage from the Aref pin [V]
-  const float m = -25.558; // linearization slope of therm temp [K / V]
-  const float b = 399.733; // linearization y-intercept of therm temp [K]
+  int thermistorPin; // analog pin for thermistor reading
 
   // class member variables - PID Loop
   float pulseKp, pulseKi, pulseKd;
@@ -40,14 +36,14 @@ class heater
   unsigned int timeChange;
   unsigned int lastTime;
   float tempSetpoint;
+  int volts; // voltage for voltage driver
 
   // class member variables - voltage driver
-  const int heaterPin; // digital pin for heater PWM control
-  const int voltRange = 120; // absolute range of the voltage output [mV]
+  int heaterPin; // digital pin for heater PWM control
 
   //CONSTRUCTOR
   public:
-  thermistor (int thermPin, int heatPin, float Kp, float Ki, float Kd, float initialTemp)
+  heater(int thermPin, int heatPin, float Kp, float Ki, float Kd, float initialTemp)
   {
     thermistorPin = thermPin;
     pinMode(thermistorPin, INPUT);
