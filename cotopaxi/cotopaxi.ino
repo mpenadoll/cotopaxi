@@ -42,7 +42,7 @@ const int numHeaters = 2; // number of heaters
 
 void setup()
 {
-  Serial.begin(9600);
+//  Serial.begin(9600);
   
   // SSD1306 Init
   display.begin();  // Switch OLED

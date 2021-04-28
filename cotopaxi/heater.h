@@ -75,7 +75,6 @@ class heater
     // if there is an open circuit, trip the error variable
     if (abs(V - Vref) < 0.1)
     {
-      Serial.println("therm error");
       temp = 0;
       volts = 0;
       analogWrite(heaterPin, 0);
