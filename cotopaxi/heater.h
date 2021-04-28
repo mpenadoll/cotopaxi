@@ -69,8 +69,6 @@ class heater
   bool run()
   {
     //THERMISTOR
-    tempTotal -= tempReadings[readIndex];
-  
     int analogReading = analogRead(thermistorPin); //read the analog pin (raw 0 to 1023)
     float V = analogReading * (Vref / 1024.0); // convert the analog reading to voltage [V]
 
@@ -78,12 +76,13 @@ class heater
     if (abs(V - Vref) < 0.1)
     {
       Serial.println("therm error");
-      temp = (0 + 459.67) * 5.0/9.0;
+      temp = 0;
       volts = 0;
       analogWrite(heaterPin, 0);
       return false;
     }
-
+    
+    tempTotal -= tempReadings[readIndex];
     tempReadings[readIndex] = m * V + b; // solve for linear temp [K]
     tempTotal += tempReadings[readIndex];
   

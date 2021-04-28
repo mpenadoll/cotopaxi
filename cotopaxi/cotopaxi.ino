@@ -126,7 +126,7 @@ void loop()
 
     display.setTextSize(1);
     display.setCursor(0,36);
-    display.print(F("TEMP:"));
+    display.print(F("TMP:"));
     display.print(heater1.getTemp() * (9.0/5.0) - 459.67, 1);
 
     display.setCursor(0,56);
@@ -142,7 +142,7 @@ void loop()
 
     display.setTextSize(1);
     display.setCursor(66,36);
-    display.print(F("TEMP:"));
+    display.print(F("TMP:"));
     display.print(heater2.getTemp() * (9.0/5.0) - 459.67, 1);
 
     display.setCursor(66,56);
