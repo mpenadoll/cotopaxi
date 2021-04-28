@@ -6,7 +6,7 @@ const float Ki = 0.02; // integral gain [V / (K*s)]
 const float Kd = 15.0; // derivative gain [V * s / K]
 
 // CONSTANTS
-const unsigned int sampleTime = 150; //sample time for derivative measurements [ms]
+const unsigned int sampleTime = 500; //sample time for derivative measurements [ms]
 const unsigned int debounceDelay = 50;  // the debounce time; increase if the output flickers
 float tempSetpoint = (160 + 459.67) * 5.0/9.0; // temp for dipping [F to K]
 const int numReadings = 4; // number of readings for temperature moving average

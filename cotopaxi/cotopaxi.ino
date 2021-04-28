@@ -42,7 +42,7 @@ const int numHeaters = 2; // number of heaters
 
 void setup()
 {
-  // Serial.begin(9600);
+  Serial.begin(9600);
   
   // SSD1306 Init
   display.begin();  // Switch OLED
@@ -107,13 +107,17 @@ void loop()
 
     display.setTextSize(1);
     display.setCursor(0,0);
-    display.print(F(" HEATER 1"));
-    display.setCursor(64,0);
+    display.print(F("HEATER 1"));
+    display.setCursor(60,0);
     display.println(F("| HEATER 2"));
-    display.println(F("|"));
-    display.println(F("|"));
-    display.println(F("|"));
-    
+    display.println(F("          |"));
+    display.println(F("          |"));
+    display.println(F("          |"));
+    display.println(F("          |"));
+    display.println(F("          |"));
+    display.println(F("          |"));
+    display.println(F("          |"));
+
     display.setTextSize(2);
     display.setCursor(0,16);
 
@@ -122,8 +126,8 @@ void loop()
 
     display.setTextSize(1);
     display.setCursor(0,36);
-    display.print(F("TEMP: "));
-    display.print(heater1.getTemp(), 1);
+    display.print(F("TEMP:"));
+    display.print(heater1.getTemp() * (9.0/5.0) - 459.67, 1);
 
     display.setCursor(0,56);
     display.print(F("V: "));
@@ -138,12 +142,14 @@ void loop()
 
     display.setTextSize(1);
     display.setCursor(66,36);
-    display.print(F("TEMP: "));
-    display.print(heater2.getTemp(), 1);
+    display.print(F("TEMP:"));
+    display.print(heater2.getTemp() * (9.0/5.0) - 459.67, 1);
 
     display.setCursor(66,56);
     display.print(F("V: "));
     display.print(heater2.getVolts(), 1);
+
+    display.display();
     
     // save static variables for next round
     lastTime = now;

@@ -71,13 +71,14 @@ class heater
     //THERMISTOR
     tempTotal -= tempReadings[readIndex];
   
-    int analogReading = analogRead(thermistor1pin); //read the analog pin (raw 0 to 1023)
+    int analogReading = analogRead(thermistorPin); //read the analog pin (raw 0 to 1023)
     float V = analogReading * (Vref / 1024.0); // convert the analog reading to voltage [V]
 
     // if there is an open circuit, trip the error variable
     if (abs(V - Vref) < 0.1)
     {
-      temp = 0;
+      Serial.println("therm error");
+      temp = (0 + 459.67) * 5.0/9.0;
       volts = 0;
       analogWrite(heaterPin, 0);
       return false;
