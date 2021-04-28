@@ -107,9 +107,18 @@ void loop()
 
     display.setTextSize(1);
     display.setCursor(0,0);
-    display.print(F("HEATER 1"));
-    display.setCursor(60,0);
-    display.println(F("| HEATER 2"));
+    if (heaterIndex == 0)
+    {
+      display.print(F(">HEATER 1"));
+      display.setCursor(60,0);
+      display.println(F("|HEATER 2"));
+    }
+    else
+    {
+      display.print(F("HEATER 1"));
+      display.setCursor(60,0);
+      display.println(F("|>HEATER 2"));
+    }
     display.println(F("          |"));
     display.println(F("          |"));
     display.println(F("          |"));

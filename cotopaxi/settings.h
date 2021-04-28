@@ -14,7 +14,7 @@ const float Vref = 5.0; // reference voltage from the Aref pin [V]
 const float m = -25.558; // linearization slope of therm temp [K / V]
 const float b = 399.733; // linearization y-intercept of therm temp [K]
 const int voltRange = 120; // absolute range of the voltage output [V]
-const int voltMax = 120 * 0.5; // artificial max on the volts [V]
+const int voltMax = 120 * 1; // artificial max on the volts [V]
 
 // PINS
 const int encoderApin = 2;  //Best Performance: both pins have interrupt capability
