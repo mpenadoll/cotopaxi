@@ -79,7 +79,6 @@ void setup()
 }
 
 void voltageDriver(int volts, int PWMpin) {
-  volts = constrain(volts, 0, voltMax);
   if (volts <= 0){
     analogWrite(PWMpin, 0);
   }
@@ -201,6 +200,7 @@ void loop()
     if (now - lastTime >= sampleTime){
 
       int volts = heater.computePID(tempSetpoint, temp);
+      volts = constrain(volts, 0, voltMax);
       voltageDriver(volts, heaterPin);
 
       // save static variables for next round
