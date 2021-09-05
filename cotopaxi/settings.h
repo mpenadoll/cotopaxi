@@ -13,6 +13,7 @@ const float Vref = 5.0; // reference voltage from the Aref pin [V]
 const float m = -25.558; // linearization slope of therm temp [K / V]
 const float b = 399.733; // linearization y-intercept of therm temp [K]
 float tempSetpoint = (160 + 459.67) * 5.0/9.0; // temp for dipping [F to K]
+const int voltMax = 120 * 0.5; // max voltage for heater [V]
 
 // PINS
 const int encoderApin = 2;  //Best Performance: both pins have interrupt capability
