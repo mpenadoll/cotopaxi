@@ -77,7 +77,7 @@ class heater
     {
       temp = 0;
       volts = 0;
-      analogWrite(heaterPin, 0);
+      digitalWrite(heaterPin, LOW);
       return false;
     }
     
@@ -90,33 +90,37 @@ class heater
   
     temp = tempTotal / numReadings;
 
-    //PID LOOP
-    unsigned int now = millis();
-    timeChange = now - lastTime;
-    
-    // update the error
     error = tempSetpoint - temp;
+    if (error < 0) digitalWrite(heaterPin, LOW);
+    else if (error > hysteresis) digitalWrite(heaterPin, HIGH);
 
-    if (abs(error) < 3.0) errSum += error * timeChange; // prevents integral from growing when error is large
-    dErr = (error - lastErr) / (float)timeChange;
+    // //PID LOOP
+    // unsigned int now = millis();
+    // timeChange = now - lastTime;
     
-    // Save static variables for next round
-    lastErr = error;
-    lastTime = now;
+    // // update the error
+    // error = tempSetpoint - temp;
 
-    volts = pulseKp * error + pulseKi * errSum + pulseKd * dErr;
+    // if (abs(error) < 3.0) errSum += error * timeChange; // prevents integral from growing when error is large
+    // dErr = (error - lastErr) / (float)timeChange;
+    
+    // // Save static variables for next round
+    // lastErr = error;
+    // lastTime = now;
 
-    //VOLTAGE DRIVER
-    volts = constrain(volts, 0, voltMax);
+    // volts = pulseKp * error + pulseKi * errSum + pulseKd * dErr;
 
-    if (volts <= 0)
-    {
-      analogWrite(heaterPin, 0);
-    }
-    else
-    {
-      analogWrite(heaterPin, map(abs(volts),0,voltRange,0,255));
-    }
+    // //VOLTAGE DRIVER
+    // volts = constrain(volts, 0, voltMax);
+
+    // if (volts <= 0)
+    // {
+    //   analogWrite(heaterPin, 0);
+    // }
+    // else
+    // {
+    //   analogWrite(heaterPin, map(abs(volts),0,voltRange,0,255));
+    // }
 
     return true;
   }
@@ -143,6 +147,6 @@ class heater
   // return the current voltage drive
   float getVolts()
   {
-    return volts;
+    return digitalRead(heaterPin);
   }
 };
