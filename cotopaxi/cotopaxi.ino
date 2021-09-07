@@ -43,6 +43,8 @@ const int numHeaters = 2; // number of heaters
 void setup()
 {
 //  Serial.begin(9600);
+
+  pinMode(mixerPin, OUTPUT);
   
   // SSD1306 Init
   display.begin();  // Switch OLED
@@ -57,11 +59,11 @@ void setup()
 
   //---------------------------------------------- Set PWM frequency for D9 & D10 ------------------------------
    
-//  TCCR1B = TCCR1B & B11111000 | B00000001;    // set timer 1 divisor to     1 for PWM frequency of 31372.55 Hz
-//  TCCR1B = TCCR1B & B11111000 | B00000010;    // set timer 1 divisor to     8 for PWM frequency of  3921.16 Hz
-//  TCCR1B = TCCR1B & B11111000 | B00000011;    // set timer 1 divisor to    64 for PWM frequency of   490.20 Hz
-//  TCCR1B = TCCR1B & B11111000 | B00000100;    // set timer 1 divisor to   256 for PWM frequency of   122.55 Hz
-  TCCR1B = TCCR1B & B11111000 | B00000101;    // set timer 1 divisor to  1024 for PWM frequency of    30.64 Hz
+  TCCR1B = TCCR1B & B11111000 | B00000001;    // set timer 1 divisor to     1 for PWM frequency of 31372.55 Hz
+  // TCCR1B = TCCR1B & B11111000 | B00000010;    // set timer 1 divisor to     8 for PWM frequency of  3921.16 Hz
+  // TCCR1B = TCCR1B & B11111000 | B00000011;    // set timer 1 divisor to    64 for PWM frequency of   490.20 Hz
+  // TCCR1B = TCCR1B & B11111000 | B00000100;    // set timer 1 divisor to   256 for PWM frequency of   122.55 Hz
+  // TCCR1B = TCCR1B & B11111000 | B00000101;    // set timer 1 divisor to  1024 for PWM frequency of    30.64 Hz
   
   updateKnob();
 
@@ -97,6 +99,8 @@ void loop()
 
   if (heaterIndex == 0) heater1.changeTarget(tempChange);
   else heater2.changeTarget(tempChange);
+
+  analogWrite(mixerPin, 100);
 
   unsigned int now = millis();
   static unsigned int lastTime = now - sampleTime;

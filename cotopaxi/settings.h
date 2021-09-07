@@ -22,9 +22,10 @@ const int encoderApin = 2;  //Best Performance: both pins have interrupt capabil
 const int encoderBpin = 3;  //Best Performance: both pins have interrupt capability
 const int thermistor1pin = A1; //Analog Read pin for the Thermistor (Voltage Divider)
 const int thermistor2pin = A3; //
-const int heater1pin = 9; //PWM pin for the first heater, goes to mosfet gate
-const int heater2pin = 10;
+const int heater1pin = 9; //PWM pin for the first heater, frequency controlled
+const int heater2pin = 11; //PWM pin for the second heater, default frequency 490 Hz
 const int buttonPin = 4; //pin for encoder momentary button
+const int mixerPin = 10; //PWM pin for the mixer motor, frequency controlled
 
 /*
 OLED Display I2C pins
