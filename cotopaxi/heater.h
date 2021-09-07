@@ -37,13 +37,14 @@ class heater
   unsigned int lastTime;
   float tempSetpoint;
   int volts; // voltage for voltage driver
+  int voltMax; // max voltage for driver
 
   // class member variables - voltage driver
   int heaterPin; // digital pin for heater PWM control
 
   //CONSTRUCTOR
   public:
-  heater(int thermPin, int heatPin, float Kp, float Ki, float Kd, float initialTemp)
+  heater(int thermPin, int heatPin, float Kp, float Ki, float Kd, float initialTemp, int maxVolts)
   {
     thermistorPin = thermPin;
     pinMode(thermistorPin, INPUT);
@@ -63,6 +64,8 @@ class heater
     pulseKd = Kd * 1000.0; //derivative gain [V * ms / K]
 
     tempSetpoint = initialTemp; // set the initial temperature setpoint
+
+    voltMax = maxVolts; // constrain the heater to this maximum voltage
   }
 
   // runs the heater, returns true if it ran correctly, returns false if there was a bad thermistor reading
@@ -115,7 +118,7 @@ class heater
     }
     else
     {
-      analogWrite(heaterPin, map(abs(volts),0,voltRange,0,255));
+      analogWrite(heaterPin, map(abs(volts),0,120,0,255));
     }
 
     return true;
