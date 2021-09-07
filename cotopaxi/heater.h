@@ -100,7 +100,7 @@ class heater
     // update the error
     error = tempSetpoint - temp;
 
-    if (abs(error) < 3.0) errSum += error * timeChange; // prevents integral from growing when error is large
+    if (abs(volts) < voltMax) errSum += error * timeChange; // prevents integral from growing when volt already max
     dErr = (error - lastErr) / (float)timeChange;
     
     // Save static variables for next round
