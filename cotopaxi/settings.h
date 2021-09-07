@@ -2,7 +2,7 @@
 
 // Set PID Controller Settings for Position Control
 const float Kp = 15.0; // proportional gain [V / K]
-const float Ki = 0.02; // integral gain [V / (K*s)]
+const float Ki = 0.01; // integral gain [V / (K*s)]
 const float Kd = 15.0; // derivative gain [V * s / K]
 
 // CONSTANTS
