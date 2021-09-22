@@ -61,6 +61,7 @@ class toggleButton
   }
 };
 
+/*
 class momentaryButton
 {
   // class member variables
@@ -108,3 +109,4 @@ class momentaryButton
     return !buttonState; // not button state because true = HIGH, false = LOW
   }
 };
+*/
