@@ -9,12 +9,6 @@
 #include <Adafruit_GFX.h>   // Needs a little change in original Adafruit library (See README.txt file)
 #include <Wire.h>           // For I2C comm, but needed for not getting compile error
 
-/*
-HardWare I2C pins
-A4   SDA
-A5   SCL
-*/
-
 // Pin definitions
 #define OLED_RESET  16  // Pin 15 -RESET digital signal
 
@@ -80,8 +74,12 @@ void updateKnob()
 {
   // update encoder knob for temperature change command
   int newPosition = encoder.read();
-  tempChange = newPosition - currentPosition;
-  currentPosition = newPosition;
+  if (abs(newPosition - currentPosition) > 3) 
+  {
+    tempChange = (newPosition - currentPosition)/3;
+    currentPosition = newPosition;
+  }
+  else tempChange = 0;
 
   if (indexButton.updateButton(toggle))
   {
@@ -95,8 +93,11 @@ void loop()
 {
   updateKnob();
 
-  if (heaterIndex == 0) heater1.changeTarget(tempChange);
-  else heater2.changeTarget(tempChange);
+  // if (heaterIndex == 0) heater1.changeTarget(tempChange);
+  // else heater2.changeTarget(tempChange);
+  // Linked Setpoints
+  heater1.changeTarget(tempChange);
+  heater2.changeTarget(tempChange);
 
   unsigned int now = millis();
   static unsigned int lastTime = now - sampleTime;
@@ -107,18 +108,21 @@ void loop()
 
     display.setTextSize(1);
     display.setCursor(0,0);
-    if (heaterIndex == 0)
-    {
-      display.print(F(">HEATER 1"));
-      display.setCursor(60,0);
-      display.println(F("|HEATER 2"));
-    }
-    else
-    {
-      display.print(F("HEATER 1"));
-      display.setCursor(60,0);
-      display.println(F("|>HEATER 2"));
-    }
+    // if (heaterIndex == 0)
+    // {
+    //   display.print(F("HEATER 1"));
+    //   display.setCursor(60,0);
+    //   display.println(F("|HEATER 2"));
+    // }
+    // else
+    // {
+    //   display.print(F("HEATER 1"));
+    //   display.setCursor(60,0);
+    //   display.println(F("|HEATER 2"));
+    // }
+    display.print(F("HEATER 1"));
+    display.setCursor(60,0);
+    display.println(F("|HEATER 2"));
     display.println(F("          |"));
     display.println(F("          |"));
     display.println(F("          |"));
