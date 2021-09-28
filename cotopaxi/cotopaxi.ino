@@ -9,12 +9,6 @@
 #include <Adafruit_GFX.h>   // Needs a little change in original Adafruit library (See README.txt file)
 #include <Wire.h>           // For I2C comm, but needed for not getting compile error
 
-/*
-HardWare I2C pins
-A4   SDA
-A5   SCL
-*/
-
 // Pin definitions
 #define OLED_RESET  16  // Pin 15 -RESET digital signal
 
@@ -80,8 +74,12 @@ void updateKnob()
 {
   // update encoder knob for temperature change command
   int newPosition = encoder.read();
-  tempChange = newPosition - currentPosition;
-  currentPosition = newPosition;
+  if (abs(newPosition - currentPosition) > 3) 
+  {
+    tempChange = (newPosition - currentPosition)/3;
+    currentPosition = newPosition;
+  }
+  else tempChange = 0;
 
   if (indexButton.updateButton(toggle))
   {
