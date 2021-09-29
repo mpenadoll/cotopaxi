@@ -124,7 +124,7 @@ class heater
   // change the temperature setpoint, and return the new setpoint
   float changeTarget(float tempChange)
   {
-    tempSetpoint += tempChange / 2.0 / (9.0/5.0); // convert to F and add to setpoint
+    tempSetpoint += tempChange / 1.0 / (9.0/5.0); // convert to F and add to setpoint
     return tempSetpoint;
   }
 
