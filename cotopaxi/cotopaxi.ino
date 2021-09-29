@@ -18,8 +18,8 @@
 ArducamSSD1306 display(OLED_RESET); // FOR I2C
 
 // Initialize the PIDloops for the heaters
-heater heater1(thermistor1pin, heater1pin, Kp, Ki, Kd, (190 + 459.67) * 5.0/9.0, 60);
-heater heater2(thermistor2pin, heater2pin, Kp, Ki, Kd, (165 + 459.67) * 5.0/9.0, 120);
+heater heater1(thermistor1pin, heater1pin, Kp, Ki, Kd, (160 + 459.67) * 5.0/9.0, 80);
+heater heater2(thermistor2pin, heater2pin, Kp, Ki, Kd, (190 + 459.67) * 5.0/9.0, 60);
 
 // Initialize Encoder (for the Knob)
 Encoder encoder(encoderApin, encoderBpin);
