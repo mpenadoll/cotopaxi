@@ -97,7 +97,7 @@ class heater
     // update the error
     error = tempSetpoint - temp;
 
-    if (abs(error) < 3.0) errSum += error * timeChange; // prevents integral from growing when error is large
+    if (abs(volts) < voltMax) errSum += error * timeChange; // prevents integral from growing when volt already max
     dErr = (error - lastErr) / (float)timeChange;
     
     // Save static variables for next round
@@ -124,7 +124,7 @@ class heater
   // change the temperature setpoint, and return the new setpoint
   float changeTarget(float tempChange)
   {
-    tempSetpoint += tempChange / 2.0 / (9.0/5.0); // convert to F and add to setpoint
+    tempSetpoint += tempChange / 1.0 / (9.0/5.0); // convert to F and add to setpoint
     return tempSetpoint;
   }
 
