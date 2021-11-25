@@ -105,7 +105,6 @@ void loop()
   if (now - lastTime >= sampleTime)
   {
     display.clearDisplay();
-
     display.setTextSize(1);
     display.setCursor(0,0);
     // if (heaterIndex == 0)
