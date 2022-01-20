@@ -97,7 +97,8 @@ class heater
     // update the error
     error = tempSetpoint - temp;
 
-    if (abs(volts) < voltMax) errSum += error * timeChange; // prevents integral from growing when volt already max
+    errSum += error * timeChange;
+    if (abs(errSum) > voltMax / pulseKi) errSum = sgn(error) * voltMax / pulseKi; // pin errSum at voltMax equivalent with error sign
     dErr = (error - lastErr) / (float)timeChange;
     
     // Save static variables for next round
@@ -144,5 +145,15 @@ class heater
   float getVolts()
   {
     return volts;
+  }
+
+  float getErrSum()
+  {
+    return errSum;
+  }
+
+  float getErr()
+  {
+    return error;
   }
 };
