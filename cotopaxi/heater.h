@@ -68,6 +68,42 @@ class heater
   // runs the heater, returns true if it ran correctly, returns false if there was a bad thermistor reading
   bool run()
   {
+    if (!setTemp()) return false;
+
+    //PID LOOP
+    unsigned int now = millis();
+    timeChange = now - lastTime;
+    
+    // update the error
+    error = tempSetpoint - temp;
+
+    errSum += error * timeChange;
+    if (abs(errSum) > voltMax / pulseKi) errSum = sgn(error) * voltMax / pulseKi; // pin errSum at voltMax equivalent with error sign
+    dErr = (error - lastErr) / (float)timeChange;
+    
+    // Save static variables for next round
+    lastErr = error;
+    lastTime = now;
+
+    volts = pulseKp * error + pulseKi * errSum + pulseKd * dErr;
+
+    //VOLTAGE DRIVER
+    volts = constrain(volts, 0, voltMax);
+
+    if (volts <= 0)
+    {
+      analogWrite(heaterPin, 0);
+    }
+    else
+    {
+      analogWrite(heaterPin, map(abs(volts),0,voltRange,0,255));
+    }
+
+    return true;
+  }
+
+  bool setTemp()
+  {
     //THERMISTOR
     int analogReading = analogRead(thermistorPin); //read the analog pin (raw 0 to 1023)
     float V = analogReading * (Vref / 1024.0); // convert the analog reading to voltage [V]
@@ -89,34 +125,6 @@ class heater
     if (readIndex >= numReadings) readIndex = 0;
   
     temp = tempTotal / numReadings;
-
-    //PID LOOP
-    unsigned int now = millis();
-    timeChange = now - lastTime;
-    
-    // update the error
-    error = tempSetpoint - temp;
-
-    if (abs(volts) < voltMax) errSum += error * timeChange; // prevents integral from growing when volt already max
-    dErr = (error - lastErr) / (float)timeChange;
-    
-    // Save static variables for next round
-    lastErr = error;
-    lastTime = now;
-
-    volts = pulseKp * error + pulseKi * errSum + pulseKd * dErr;
-
-    //VOLTAGE DRIVER
-    volts = constrain(volts, 0, voltMax);
-
-    if (volts <= 0)
-    {
-      analogWrite(heaterPin, 0);
-    }
-    else
-    {
-      analogWrite(heaterPin, map(abs(volts),0,voltRange,0,255));
-    }
 
     return true;
   }
@@ -144,5 +152,15 @@ class heater
   float getVolts()
   {
     return volts;
+  }
+
+  float getErrSum()
+  {
+    return errSum;
+  }
+
+  float getErr()
+  {
+    return error;
   }
 };

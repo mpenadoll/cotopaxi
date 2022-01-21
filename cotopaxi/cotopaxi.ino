@@ -36,7 +36,7 @@ const int numHeaters = 2; // number of heaters
 
 void setup()
 {
-//  Serial.begin(9600);
+  // Serial.begin(9600);
   
   // SSD1306 Init
   display.begin();  // Switch OLED
@@ -59,15 +59,15 @@ void setup()
   
   updateKnob();
 
+  Serial.println("----------------------------------------");
   Serial.println("READY");
-//  Serial.println("Time [ms], Setpoint [F], Temp1 [F], Volts [V]");
-}
 
-static inline int8_t sgn(float val)
-{
- if (val < 0) return -1;
- if (val==0) return 0;
- return 1;
+  for (int i = 0; i < numReadings*2; i++)
+  {
+    heater1.setTemp();
+    heater2.setTemp();
+    delay(10);
+  }
 }
 
 void updateKnob()
@@ -101,6 +101,23 @@ void loop()
 
   unsigned int now = millis();
   static unsigned int lastTime = now - sampleTime;
+
+  // static unsigned int printTime = now - 3000;
+  // if (now - printTime >= 3000)
+  // {
+  //   Serial.println("--------------");
+  //   Serial.print("Heater 1 Temp:  ");
+  //   Serial.println(heater1.getTemp());
+  //   Serial.print("Heater 1 Target:");
+  //   Serial.println(heater1.getTarget());
+  //   Serial.print("Heater 1 Error: ");
+  //   Serial.println(heater1.getErr());
+  //   Serial.print("Heater 1 ErrSum:");
+  //   Serial.println(heater1.getErrSum());
+  //   Serial.print("Heater 1 Volts: ");
+  //   Serial.println(heater1.getVolts());
+  //   printTime = now;
+  // }
 
   if (now - lastTime >= sampleTime)
   {
@@ -165,11 +182,5 @@ void loop()
     
     // save static variables for next round
     lastTime = now;
-
-//      Serial.println(volts2);
-//      for (int i = 0; i < numReadings; i++) {
-//        Serial.println(temp1readings[i] * (9.0/5.0) - 459.67);
-//        Serial.println(temp2readings[i] * (9.0/5.0) - 459.67);
-//      }
   }
 }

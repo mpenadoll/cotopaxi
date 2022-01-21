@@ -2,13 +2,13 @@
 
 // Set PID Controller Settings for Position Control
 const float Kp = 15.0; // proportional gain [V / K]
-const float Ki = 0.02; // integral gain [V / (K*s)]
+const float Ki = 0.2; // integral gain [V / (K*s)]
 const float Kd = 15.0; // derivative gain [V * s / K]
 
 // CONSTANTS
 const unsigned int sampleTime = 200; //sample time for derivative measurements [ms]
 const unsigned int debounceDelay = 30;  // the debounce time; increase if the output flickers
-float tempSetpoint = (165 + 459.67) * 5.0/9.0; // temp for dipping [F to K]
+float tempSetpoint = (167 + 459.67) * 5.0/9.0; // temp for dipping [F to K]
 const int numReadings = 4; // number of readings for temperature moving average
 const float Vref = 5.0; // reference voltage from the Aref pin [V]
 const float m = -25.558; // linearization slope of therm temp [K / V]
@@ -30,3 +30,10 @@ OLED Display I2C pins
 A4   SDA
 A5   SCL
 */
+
+static inline int8_t sgn(float val)
+{
+ if (val < 0) return -1;
+ if (val==0) return 0;
+ return 1;
+}
