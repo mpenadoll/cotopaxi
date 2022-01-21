@@ -59,8 +59,16 @@ void setup()
   
   updateKnob();
 
+  Serial.println("----------------------------------------");
   Serial.println("READY");
-//  Serial.println("Time [ms], Setpoint [F], Temp1 [F], Volts [V]");
+  //  Serial.println("Time [ms], Setpoint [F], Temp1 [F], Volts [V]");
+
+  for (int i = 0; i < numReadings*2; i++)
+  {
+    heater1.setTemp();
+    heater2.setTemp();
+    delay(10);
+  }
 }
 
 void updateKnob()

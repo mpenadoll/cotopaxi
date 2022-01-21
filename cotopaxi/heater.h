@@ -68,27 +68,7 @@ class heater
   // runs the heater, returns true if it ran correctly, returns false if there was a bad thermistor reading
   bool run()
   {
-    //THERMISTOR
-    int analogReading = analogRead(thermistorPin); //read the analog pin (raw 0 to 1023)
-    float V = analogReading * (Vref / 1024.0); // convert the analog reading to voltage [V]
-
-    // if there is an open circuit, trip the error variable
-    if (abs(V - Vref) < 0.1)
-    {
-      temp = 0;
-      volts = 0;
-      analogWrite(heaterPin, 0);
-      return false;
-    }
-    
-    tempTotal -= tempReadings[readIndex];
-    tempReadings[readIndex] = m * V + b; // solve for linear temp [K]
-    tempTotal += tempReadings[readIndex];
-  
-    readIndex += 1;
-    if (readIndex >= numReadings) readIndex = 0;
-  
-    temp = tempTotal / numReadings;
+    if (!setTemp()) return false;
 
     //PID LOOP
     unsigned int now = millis();
@@ -118,6 +98,33 @@ class heater
     {
       analogWrite(heaterPin, map(abs(volts),0,voltRange,0,255));
     }
+
+    return true;
+  }
+
+  bool setTemp()
+  {
+    //THERMISTOR
+    int analogReading = analogRead(thermistorPin); //read the analog pin (raw 0 to 1023)
+    float V = analogReading * (Vref / 1024.0); // convert the analog reading to voltage [V]
+
+    // if there is an open circuit, trip the error variable
+    if (abs(V - Vref) < 0.1)
+    {
+      temp = 0;
+      volts = 0;
+      analogWrite(heaterPin, 0);
+      return false;
+    }
+    
+    tempTotal -= tempReadings[readIndex];
+    tempReadings[readIndex] = m * V + b; // solve for linear temp [K]
+    tempTotal += tempReadings[readIndex];
+  
+    readIndex += 1;
+    if (readIndex >= numReadings) readIndex = 0;
+  
+    temp = tempTotal / numReadings;
 
     return true;
   }
