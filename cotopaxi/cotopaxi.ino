@@ -50,7 +50,7 @@ void setup()
   display.setTextSize(1);
   display.setTextColor(WHITE);
   display.setCursor(0,0);
-  display.println(F("Hey, Hot Stuff!"));
+  display.println(F("Good Morning, Sasha!"));
   display.display();
 
   delay(3000);
