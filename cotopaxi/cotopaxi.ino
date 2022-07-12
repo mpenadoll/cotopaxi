@@ -80,8 +80,12 @@ void updateKnob()
 {
   // update encoder knob for temperature change command
   int newPosition = encoder.read();
-  tempChange = newPosition - currentPosition;
-  currentPosition = newPosition;
+  if (abs(newPosition - currentPosition) > 3) 
+  {
+    tempChange = (newPosition - currentPosition)/3;
+    currentPosition = newPosition;
+  }
+  else tempChange = 0;
 
   if (indexButton.updateButton(toggle))
   {
