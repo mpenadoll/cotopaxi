@@ -8,7 +8,8 @@ const float Kd = 15.0; // derivative gain [V * s / K]
 // CONSTANTS
 const unsigned int sampleTime = 200; //sample time for derivative measurements [ms]
 const unsigned int debounceDelay = 30;  // the debounce time; increase if the output flickers
-float tempSetpoint = (167 + 459.67) * 5.0/9.0; // temp for dipping [F to K]
+const float tempOffset = 0.0 * 5.0/9.0; // offset temp for calibrating sensors (must be measured, otherwise set to 0)
+float tempSetpoint = (165 + 459.67) * 5.0/9.0 - tempOffset; // temp for dipping [F to K]
 const int numReadings = 4; // number of readings for temperature moving average
 const float Vref = 5.0; // reference voltage from the Aref pin [V]
 const float m = -25.558; // linearization slope of therm temp [K / V]

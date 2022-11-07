@@ -139,13 +139,13 @@ class heater
   // get the current temperature setpoint
   float getTarget()
   {
-    return tempSetpoint;
+    return tempSetpoint + tempOffset;
   }
 
   // return the actual temperature reading
   float getTemp()
   {
-    return temp;
+    return temp + tempOffset;
   }
 
   // return the current voltage drive
