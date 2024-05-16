@@ -44,7 +44,10 @@ void setup()
   display.setTextSize(1);
   display.setTextColor(WHITE);
   display.setCursor(0,0);
-  display.println(F("Good Morning,        I'm the Kraken!"));
+  display.println(F("Good Morning!"));
+  display.setCursor(0,16);
+  display.setTextSize(2);
+  display.println(F("I'm the    KRAKEN"));
   display.display();
 
   delay(3000);

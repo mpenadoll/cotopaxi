@@ -78,7 +78,7 @@ class heater
     error = tempSetpoint - temp;
 
     errSum += error * timeChange;
-    if (abs(errSum) > voltMax / pulseKi) errSum = sgn(error) * voltMax / pulseKi; // pin errSum at voltMax equivalent with error sign
+    if (abs(errSum) > 0.4 * voltMax / pulseKi) errSum = sgn(error) * 0.4 * voltMax / pulseKi; // pin errSum at voltMax equivalent with error sign
     dErr = (error - lastErr) / (float)timeChange;
     
     // Save static variables for next round
