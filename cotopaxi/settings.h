@@ -1,4 +1,4 @@
-//Settings file for the spice rack and motor
+//Settings file for the Kraken Can and Tank Heaters
 
 // Set PID Controller Settings for Position Control
 const float Kp = 15.0; // proportional gain [V / K]
